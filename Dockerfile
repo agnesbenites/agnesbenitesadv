@@ -17,20 +17,24 @@ ENV npm_config_ignore_engines=true
 # Diretório de trabalho
 WORKDIR /app
 
-# Copia arquivos de dependência
-COPY api/package*.json ./
+# Copia arquivos de dependência primeiro (melhor cache)
+COPY package*.json ./
 
-# Instala dependências (ignora engines check)
-RUN npm install --production --ignore-engines
+# Instala dependências
+RUN npm ci --only=production --ignore-scripts || npm install --production --ignore-engines
 
-# Copia código da aplicação
-COPY api/ ./
+# Copia todo o código da aplicação
+COPY . .
 
 # Cria diretório para documentos
 RUN mkdir -p /data/documents
 
 # Porta
 EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 # Comando
 CMD ["node", "server.js"]
