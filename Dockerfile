@@ -41,17 +41,19 @@ RUN apt-get update && apt-get install -y \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+# MUDEI AQUI: Trabalhar DENTRO da pasta api desde o início
+WORKDIR /app/api
 
-# Copia APENAS os arquivos de dependência
+# Copia os arquivos de dependência para /app/api/
 COPY api/package.json api/package-lock.json* ./
 
-# Instala dependências SEM as devDependencies
+# Instala dependências SEM as devDependencies (agora dentro de /app/api/)
 RUN npm ci --omit=dev
 
 # Copia TODO o resto da pasta api
-COPY api/ ./api/
+COPY api/ ./
 
 EXPOSE 3000
 
-CMD ["node", "api/server.js"]
+# MUDEI AQUI: Agora server.js está no diretório atual (/app/api/)
+CMD ["node", "server.js"]
