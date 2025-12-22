@@ -10,21 +10,20 @@ RUN apk add --no-cache \
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-
-# Ignora verificação de versão do Node
 ENV npm_config_ignore_engines=true
 
 # Diretório de trabalho
 WORKDIR /app
 
-# Copia arquivos de dependência primeiro (melhor cache)
-COPY package*.json ./
+# Copia apenas package.json (sem lock file)
+COPY api/package.json ./
 
-# Instala dependências
-RUN npm ci --only=production --ignore-scripts || npm install --production --ignore-engines
+# Limpa cache do npm e instala dependências do zero
+RUN npm cache clean --force && \
+    npm install --production --ignore-engines --no-package-lock
 
-# Copia todo o código da aplicação
-COPY . .
+# Copia o código da pasta api/
+COPY api/ ./
 
 # Cria diretório para documentos
 RUN mkdir -p /data/documents

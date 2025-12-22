@@ -16,6 +16,7 @@ primary_region = "gru"
   min_machines_running = 0
   processes = ["app"]
 
+<<<<<<< HEAD
   # REMOVIDO health check temporariamente para debug
   # [[http_service.checks]]
   #   interval = "30s"
@@ -23,8 +24,20 @@ primary_region = "gru"
   #   grace_period = "20s"
   #   method = "GET"
   #   path = "/health"
+=======
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "15s"
+    grace_period = "20s"
+    method = "GET"
+    path = "/health"
+>>>>>>> 5a377d8832d4573a4cc27f174dea462b8d5ab55c
 
 [[vm]]
   memory = "512mb"
   cpu_kind = "shared"
+<<<<<<< HEAD
   cpus = 1
+=======
+  cpus = 1
+>>>>>>> 5a377d8832d4573a4cc27f174dea462b8d5ab55c
