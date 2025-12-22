@@ -26,17 +26,21 @@ connectDB();
 
 // Middlewares
 app.use(cors());
-app.use(bodyParser.json());
-app.use(express.static('public'));
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
-// Pasta para documentos gerados
-const DOCUMENTS_DIR = path.join(__dirname, 'documents');
+// ==================== CONFIGURAÇÕES PARA FLY.IO ====================
+
+// Pasta para documentos gerados (usa diretório persistente do Fly.io se disponível)
+const DOCUMENTS_DIR = process.env.FLY_VOLUME_PATH 
+    ? path.join(process.env.FLY_VOLUME_PATH, 'documents')
+    : path.join(__dirname, 'documents');
 
 // Criar diretório se não existir
 (async () => {
     try {
         await fs.mkdir(DOCUMENTS_DIR, { recursive: true });
-        console.log('✅ Diretório de documentos criado');
+        console.log('✅ Diretório de documentos criado:', DOCUMENTS_DIR);
     } catch (error) {
         console.error('❌ Erro ao criar diretório:', error);
     }
@@ -65,16 +69,51 @@ async function countPDFPages(filePath) {
     }
 }
 
-// ==================== ROTAS PRINCIPAIS ====================
+// ==================== ENDPOINTS CRÍTICOS PARA FLY.IO ====================
+
+// Health check endpoint (OBRIGATÓRIO para Fly.io)
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        service: 'Gerador de Documentos Jurídicos',
+        version: '3.0.0',
+        environment: process.env.NODE_ENV || 'development',
+        uptime: process.uptime(),
+        database: 'connected', // Você pode adicionar verificação real do MongoDB
+        documentsDir: DOCUMENTS_DIR
+    });
+});
+
+// Root endpoint
+app.get('/', (req, res) => {
+    res.json({
+        message: 'API de Gerador de Documentos Jurídicos - Agnes Benites Advogada',
+        version: '3.0.0',
+        status: 'online',
+        healthCheck: '/health',
+        apiDocs: '/api',
+        endpoints: {
+            templates: '/api/templates',
+            createPayment: '/api/create-payment',
+            generate: '/api/generate',
+            aiAnalysis: '/api/ai/*'
+        }
+    });
+});
+
+// ==================== ROTAS DA API ====================
 
 app.get('/api', (req, res) => {
     res.json({
         service: 'Gerador de Documentos Jurídicos - Agnes Benites',
         version: '3.0.0',
         status: 'online',
+        health: 'healthy',
         database: 'MongoDB',
         payment: 'Mercado Pago',
         ai: 'Claude (Anthropic)',
+        deployment: 'Fly.io',
         pricing: {
             basePrice: PRICING.BASE_PRICE,
             extendedPrice: PRICING.EXTENDED_PRICE,
@@ -536,15 +575,46 @@ function generateDefaultDocument(doc, data, templateId) {
        );
 }
 
+// ==================== TRATAMENTO DE ERROS GLOBAL ====================
+
+// 404 Handler
+app.use('*', (req, res) => {
+    res.status(404).json({
+        success: false,
+        error: 'Endpoint não encontrado',
+        path: req.originalUrl,
+        method: req.method,
+        availableEndpoints: {
+            health: 'GET /health',
+            api: 'GET /api',
+            templates: 'GET /api/templates',
+            createPayment: 'POST /api/create-payment',
+            generate: 'POST /api/generate'
+        }
+    });
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+    console.error('🔥 Erro não tratado:', err);
+    res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: process.env.NODE_ENV === 'development' ? err.message : undefined,
+        timestamp: new Date().toISOString()
+    });
+});
+
 // ==================== INICIAR SERVIDOR ====================
 
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
     console.log('='.repeat(60));
-    console.log('🚀 SERVIDOR INICIADO COM SUCESSO!');
+    console.log('🚀 SERVIDOR INICIADO COM SUCESSO NO FLY.IO!');
     console.log('='.repeat(60));
     console.log(`📡 Porta: ${PORT}`);
-    console.log(`🌐 URL: http://localhost:${PORT}`);
-    console.log(`⚙️  API: http://localhost:${PORT}/api`);
+    console.log(`🌐 Ambiente: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`⚙️  URL Interna: http://0.0.0.0:${PORT}`);
+    console.log(`📊 Health Check: http://0.0.0.0:${PORT}/health`);
     console.log(`🗄️  Database: MongoDB`);
     console.log(`💳 Pagamento: Mercado Pago`);
     console.log(`🤖 IA: Claude (Anthropic)`);
@@ -554,6 +624,23 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`   • Base: R$ ${PRICING.BASE_PRICE.toFixed(2)} (até ${PRICING.PAGE_THRESHOLD} páginas)`);
     console.log(`   • Estendido: R$ ${PRICING.EXTENDED_PRICE.toFixed(2)} (acima de ${PRICING.PAGE_THRESHOLD} páginas)`);
     console.log('='.repeat(60));
+});
+
+// Graceful shutdown para Fly.io
+process.on('SIGTERM', () => {
+    console.log('🛑 Recebido SIGTERM, encerrando servidor...');
+    server.close(() => {
+        console.log('✅ Servidor encerrado');
+        process.exit(0);
+    });
+});
+
+process.on('SIGINT', () => {
+    console.log('🛑 Recebido SIGINT, encerrando servidor...');
+    server.close(() => {
+        console.log('✅ Servidor encerrado');
+        process.exit(0);
+    });
 });
 
 module.exports = app;
