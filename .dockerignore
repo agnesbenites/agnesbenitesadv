@@ -1,0 +1,13 @@
+# Ignorar tudo da raiz
+*.html
+*.css
+*.js
+*.txt
+*.json
+node_modules
+.git
+.netlify
+.vscode
+
+# Exceto a pasta api (que será copiada explicitamente)
+!api/
