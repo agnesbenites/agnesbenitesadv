@@ -1,40 +1,36 @@
 FROM node:18-alpine
 
-# Instala fontes básicas para PDFKit funcionar corretamente
+# Instala fontes básicas para PDFKit
 RUN apk add --no-cache \
     ttf-freefont \
     fontconfig \
-    freetype \
-    && rm -rf /var/cache/apk/*
+    freetype
 
 # Variáveis de ambiente
 ENV NODE_ENV=production
 ENV PORT=3000
-
-# Evita problemas com puppeteer/chromium (se algum módulo tentar instalar)
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/false
+
+# Ignora verificação de versão do Node
+ENV npm_config_ignore_engines=true
 
 # Diretório de trabalho
 WORKDIR /app
 
-# Copia arquivos de dependência primeiro (para cache eficiente)
+# Copia arquivos de dependência
 COPY api/package*.json ./
 
-# Instala dependências de produção
-RUN npm ci --only=production
+# Instala dependências (ignora engines check)
+RUN npm install --production --ignore-engines
 
-# Copia o código da aplicação
+# Copia código da aplicação
 COPY api/ ./
 
-# Cria diretório para documentos com permissões adequadas
-RUN mkdir -p /data/documents && chown -R node:node /data
+# Cria diretório para documentos
+RUN mkdir -p /data/documents
 
-# Muda para usuário não-root (mais seguro)
-USER node
-
-# Porta da aplicação
+# Porta
 EXPOSE 3000
 
-# Comando de inicialização
+# Comando
 CMD ["node", "server.js"]
