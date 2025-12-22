@@ -1,26 +1,13 @@
-FROM node:18-alpine
+FROM node:18
 
-# Definir diretório de trabalho
-WORKDIR /app/api
+WORKDIR /app
 
-# Copiar package files
-COPY api/package*.json ./
+COPY api/package*.json ./api/
 
-# Instalar dependências
-RUN npm ci --only=production
+RUN cd api && npm install
 
-# Copiar código da API
-COPY api/ ./
+COPY api ./api
 
-# Criar diretórios necessários
-RUN mkdir -p documents uploads fonts
-
-# Expor porta
 EXPOSE 3000
 
-# Variável de ambiente
-ENV NODE_ENV=production
-ENV PORT=3000
-
-# Comando de inicialização
-CMD ["node", "server.js"]
+CMD ["node", "api/server.js"]
