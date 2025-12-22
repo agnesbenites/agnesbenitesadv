@@ -5,19 +5,16 @@ primary_region = "gru"
   dockerfile = "Dockerfile"
 
 [http_service]
+  internal_port = 3000
+  force_https = true
   auto_start_machines = true
   auto_stop_machines = true
-  force_https = true
-  internal_port = 3000
-  min_machines_running = 0
-  processes = [ "app" ]
-
-  # HEALTH CHECK CONFIGURADO CORRETAMENTE
+  
   [[http_service.checks]]
     grace_period = "15s"
     interval = "30s"
     method = "GET"
-    path = "/health"  # ← USA O SEU ENDPOINT /health
+    path = "/health"
     timeout = "10s"
     protocol = "http"
 
@@ -25,13 +22,12 @@ primary_region = "gru"
     grace_period = "15s"
     interval = "30s"
     method = "GET"
-    path = "/"  # ← Backup no endpoint raiz
+    path = "/"
     timeout = "10s"
 
 [[vm]]
   cpu_kind = "shared"
   cpus = 1
-  memory = "1gb"
   memory_mb = 1024
 
 [env]
