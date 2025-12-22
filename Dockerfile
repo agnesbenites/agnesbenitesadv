@@ -1,13 +1,12 @@
 FROM node:18
 
-WORKDIR /app
+WORKDIR /app/api
 
-COPY api/package*.json ./api/
+COPY api/package*.json ./
+RUN npm install
 
-RUN cd api && npm install
-
-COPY api ./api
+COPY api/ ./
 
 EXPOSE 3000
 
-CMD ["node", "api/server.js"]
+CMD ["node", "server.js"]
