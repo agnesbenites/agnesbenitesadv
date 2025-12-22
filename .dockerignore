@@ -1,13 +1,25 @@
-# Ignorar tudo da raiz
+# Ignorar arquivos desnecessários da raiz
 *.html
 *.css
-*.js
 *.txt
-*.json
+blog-styles.css
+blog.html
+estrutura.txt
+ai-analise.html
+ai-analise.js
+gerador.html
+gerador.js
+index.html
+script.js
+styles.css
+server-patched.js
+vercel.json
+netlify.toml
+
+# Ignorar pastas grandes
 node_modules
 .git
 .netlify
 .vscode
 
-# Exceto a pasta api (que será copiada explicitamente)
-!api/
+# NÃO ignorar a pasta api/ (será copiada)
