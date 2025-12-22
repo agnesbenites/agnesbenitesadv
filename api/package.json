@@ -1,14 +1,14 @@
 {
   "name": "gerador-documentos-api",
   "version": "3.0.0",
-  "main": "server.js",
+  "main": "server-patched.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node server-patched.js",
     "dev": "nodemon server.js",
     "seed": "node utils/seed-templates.js"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "20.x"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
