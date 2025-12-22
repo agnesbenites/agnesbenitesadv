@@ -6,8 +6,6 @@ const path = require('path');
 const PDFDocument = require('pdfkit');
 const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
-const aiRoutes = require('./routes/ai-routes');
-const mercadoPagoService = require('./services/mercado-pago-service');
 
 // Importar módulos
 const connectDB = require('./utils/database');
@@ -76,6 +74,7 @@ app.get('/api', (req, res) => {
         status: 'online',
         database: 'MongoDB',
         payment: 'Mercado Pago',
+        ai: 'Claude (Anthropic)',
         pricing: {
             basePrice: PRICING.BASE_PRICE,
             extendedPrice: PRICING.EXTENDED_PRICE,
@@ -89,7 +88,8 @@ app.get('/api', (req, res) => {
             generate: 'POST /api/generate',
             paymentStatus: 'GET /api/payment/:id',
             documents: 'GET /api/documents',
-            webhook: 'POST /api/webhooks/mercadopago'
+            webhook: 'POST /api/webhooks/mercadopago',
+            aiAnalysis: 'POST /api/ai/*'
         }
     });
 });
@@ -295,14 +295,6 @@ app.post('/api/generate', async (req, res) => {
                 });
             }
             
-            // EM PRODUÇÃO: Verificar se pagamento foi aprovado
-            // if (document.payment.status !== 'approved') {
-            //     return res.status(402).json({ 
-            //         success: false, 
-            //         error: 'Pagamento não aprovado' 
-            //     });
-            // }
-            
             documentData = Object.fromEntries(document.documentData);
             templateToUse = document.templateId;
             
@@ -464,6 +456,10 @@ app.get('/api/documents', async (req, res) => {
     }
 });
 
+// ==================== ROTAS DE IA ====================
+
+app.use('/api/ai', aiRoutes);
+
 // ==================== FUNÇÕES DE GERAÇÃO DE PDF ====================
 
 async function generatePDF(templateId, data, outputPath) {
@@ -541,9 +537,8 @@ function generateDefaultDocument(doc, data, templateId) {
 }
 
 // ==================== INICIAR SERVIDOR ====================
-// Rotas de IA
-app.use('/api/ai', aiRoutes);
-app.listen(PORT, () => {
+
+app.listen(PORT, '0.0.0.0', () => {
     console.log('='.repeat(60));
     console.log('🚀 SERVIDOR INICIADO COM SUCESSO!');
     console.log('='.repeat(60));
@@ -552,6 +547,7 @@ app.listen(PORT, () => {
     console.log(`⚙️  API: http://localhost:${PORT}/api`);
     console.log(`🗄️  Database: MongoDB`);
     console.log(`💳 Pagamento: Mercado Pago`);
+    console.log(`🤖 IA: Claude (Anthropic)`);
     console.log(`📁 Documentos: ${DOCUMENTS_DIR}`);
     console.log('='.repeat(60));
     console.log('💰 CONFIGURAÇÃO DE PREÇOS:');
