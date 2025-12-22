@@ -1,21 +1,16 @@
-/**
- * Rotas de IA para Análise de Documentos
- * Adicione estas rotas ao seu server.js
- */
-
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
-const aiService = require('./services/ai-service');
-const extractionService = require('./services/extraction-service');
+const aiService = require('../services/ai-service');
+const extractionService = require('../services/extraction-service');
 
 const router = express.Router();
 
 // Configurar upload de arquivos
 const storage = multer.diskStorage({
     destination: async (req, file, cb) => {
-        const uploadDir = path.join(__dirname, 'uploads');
+        const uploadDir = path.join(__dirname, '../uploads');
         await fs.mkdir(uploadDir, { recursive: true });
         cb(null, uploadDir);
     },
@@ -27,7 +22,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    limits: { fileSize: 10 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         if (extractionService.isSupportedFileType(file.originalname)) {
             cb(null, true);
@@ -37,12 +32,7 @@ const upload = multer({
     }
 });
 
-// ==================== UPLOAD E ANÁLISE ====================
-
-/**
- * POST /api/ai/upload
- * Upload de documento para análise
- */
+// Upload e análise
 router.post('/upload', upload.single('document'), async (req, res) => {
     try {
         if (!req.file) {
@@ -52,19 +42,14 @@ router.post('/upload', upload.single('document'), async (req, res) => {
             });
         }
         
-        console.log('📤 Arquivo recebido:', req.file.originalname);
-        
-        // Extrair texto
         const fileType = extractionService.getFileType(req.file.filename);
         const extractedText = await extractionService.extractTextFromFile(
             req.file.path,
             fileType
         );
         
-        // Analisar com IA
         const analysis = await aiService.analyzeDocument(extractedText);
         
-        // Salvar contexto para uso posterior
         const documentId = `ai_doc_${Date.now()}`;
         const contextData = {
             documentId,
@@ -74,8 +59,7 @@ router.post('/upload', upload.single('document'), async (req, res) => {
             analysis: analysis.analysis
         };
         
-        // Salvar contexto em arquivo temporário
-        const contextPath = path.join(__dirname, 'uploads', `${documentId}_context.json`);
+        const contextPath = path.join(__dirname, '../uploads', `${documentId}_context.json`);
         await fs.writeFile(contextPath, JSON.stringify(contextData, null, 2));
         
         res.json({
@@ -95,12 +79,7 @@ router.post('/upload', upload.single('document'), async (req, res) => {
     }
 });
 
-// ==================== SUGESTÕES DE ALTERAÇÕES ====================
-
-/**
- * POST /api/ai/suggest
- * Sugerir alterações baseado em solicitação
- */
+// Sugestões de alterações
 router.post('/suggest', async (req, res) => {
     try {
         const { documentId, userRequest } = req.body;
@@ -112,11 +91,9 @@ router.post('/suggest', async (req, res) => {
             });
         }
         
-        // Carregar contexto
-        const contextPath = path.join(__dirname, 'uploads', `${documentId}_context.json`);
+        const contextPath = path.join(__dirname, '../uploads', `${documentId}_context.json`);
         const contextData = JSON.parse(await fs.readFile(contextPath, 'utf-8'));
         
-        // Gerar sugestões
         const suggestions = await aiService.suggestChanges(
             contextData.analysis,
             userRequest
@@ -138,12 +115,7 @@ router.post('/suggest', async (req, res) => {
     }
 });
 
-// ==================== APLICAR ALTERAÇÕES ====================
-
-/**
- * POST /api/ai/apply-changes
- * Aplicar alterações selecionadas ao documento
- */
+// Aplicar alterações
 router.post('/apply-changes', async (req, res) => {
     try {
         const { documentId, selectedChanges } = req.body;
@@ -155,18 +127,15 @@ router.post('/apply-changes', async (req, res) => {
             });
         }
         
-        // Carregar contexto
-        const contextPath = path.join(__dirname, 'uploads', `${documentId}_context.json`);
+        const contextPath = path.join(__dirname, '../uploads', `${documentId}_context.json`);
         const contextData = JSON.parse(await fs.readFile(contextPath, 'utf-8'));
         
-        // Aplicar alterações
         const result = await aiService.applyChanges(
             contextData.extractedText,
             selectedChanges
         );
         
-        // Salvar documento modificado
-        const modifiedPath = path.join(__dirname, 'uploads', `${documentId}_modified.txt`);
+        const modifiedPath = path.join(__dirname, '../uploads', `${documentId}_modified.txt`);
         await fs.writeFile(modifiedPath, result.modifiedDocument);
         
         res.json({
@@ -185,12 +154,7 @@ router.post('/apply-changes', async (req, res) => {
     }
 });
 
-// ==================== GERAR CLÁUSULA ESPECÍFICA ====================
-
-/**
- * POST /api/ai/generate-clause
- * Gerar uma cláusula específica
- */
+// Gerar cláusula específica
 router.post('/generate-clause', async (req, res) => {
     try {
         const { clauseType, context } = req.body;
@@ -198,7 +162,7 @@ router.post('/generate-clause', async (req, res) => {
         if (!clauseType) {
             return res.status(400).json({
                 success: false,
-                error: 'clauseType é obrigatório (ex: "isenção de multa")'
+                error: 'clauseType é obrigatório'
             });
         }
         
@@ -218,12 +182,7 @@ router.post('/generate-clause', async (req, res) => {
     }
 });
 
-// ==================== CHAT SOBRE DOCUMENTO ====================
-
-/**
- * POST /api/ai/chat
- * Chat conversacional sobre o documento
- */
+// Chat sobre documento
 router.post('/chat', async (req, res) => {
     try {
         const { documentId, message, conversationHistory } = req.body;
@@ -235,11 +194,9 @@ router.post('/chat', async (req, res) => {
             });
         }
         
-        // Carregar contexto
-        const contextPath = path.join(__dirname, 'uploads', `${documentId}_context.json`);
+        const contextPath = path.join(__dirname, '../uploads', `${documentId}_context.json`);
         const contextData = JSON.parse(await fs.readFile(contextPath, 'utf-8'));
         
-        // Processar mensagem
         const result = await aiService.chatAboutDocument(
             contextData.analysis,
             conversationHistory || [],
@@ -260,22 +217,16 @@ router.post('/chat', async (req, res) => {
     }
 });
 
-// ==================== BAIXAR DOCUMENTO MODIFICADO ====================
-
-/**
- * GET /api/ai/download/:documentId
- * Baixar documento modificado
- */
+// Download documento modificado
 router.get('/download/:documentId', async (req, res) => {
     try {
         const { documentId } = req.params;
-        const { format } = req.query; // 'txt' ou 'pdf'
+        const { format } = req.query;
         
-        const modifiedPath = path.join(__dirname, 'uploads', `${documentId}_modified.txt`);
+        const modifiedPath = path.join(__dirname, '../uploads', `${documentId}_modified.txt`);
         const modifiedText = await fs.readFile(modifiedPath, 'utf-8');
         
         if (format === 'pdf') {
-            // Gerar PDF do texto modificado
             const PDFDocument = require('pdfkit');
             const doc = new PDFDocument({ margin: 50 });
             
@@ -283,13 +234,10 @@ router.get('/download/:documentId', async (req, res) => {
             res.setHeader('Content-Disposition', `attachment; filename="documento-modificado-${documentId}.pdf"`);
             
             doc.pipe(res);
-            
             doc.fontSize(12).font('Helvetica');
             doc.text(modifiedText, { align: 'justify' });
-            
             doc.end();
         } else {
-            // Retornar como TXT
             res.setHeader('Content-Type', 'text/plain; charset=utf-8');
             res.setHeader('Content-Disposition', `attachment; filename="documento-modificado-${documentId}.txt"`);
             res.send(modifiedText);
