@@ -1,0 +1,344 @@
+/* ==================== BLOG STYLES ==================== */
+
+/* Blog Hero */
+.blog-hero {
+    padding-top: 140px;
+    background: var(--gradient-primary);
+    color: white;
+    text-align: center;
+}
+
+.blog-hero__content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.blog-hero .section__subtitle {
+    color: var(--color-gold);
+}
+
+.blog-hero .section__title,
+.blog-hero .section__description {
+    color: white;
+}
+
+/* Coming Soon Section */
+.coming-soon {
+    background: white;
+}
+
+.coming-soon__content {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.coming-soon__icon {
+    width: 100px;
+    height: 100px;
+    background: var(--gradient-accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+}
+
+.coming-soon__icon i {
+    font-size: 3rem;
+    color: white;
+}
+
+.coming-soon__content h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--color-navy);
+}
+
+.coming-soon__content > p {
+    font-size: 1.125rem;
+    color: var(--color-gray);
+    line-height: 1.8;
+    margin-bottom: 3rem;
+}
+
+.coming-soon__topics {
+    background: linear-gradient(135deg, rgba(255, 111, 97, 0.05) 0%, rgba(255, 111, 97, 0.1) 100%);
+    border-radius: var(--radius-md);
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+    text-align: left;
+}
+
+.coming-soon__topics h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--color-navy);
+    text-align: center;
+}
+
+.coming-soon__topics ul {
+    list-style: none;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.coming-soon__topics li {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 1.063rem;
+}
+
+.coming-soon__topics i {
+    color: var(--color-coral);
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+}
+
+.coming-soon__cta {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-navy);
+    margin-bottom: 1.5rem;
+}
+
+/* Blog Grid (for future use) */
+.blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-top: 4rem;
+}
+
+.blog-card {
+    background: white;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-base);
+}
+
+.blog-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg);
+}
+
+.blog-card__image {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+}
+
+.blog-card__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: var(--transition-slow);
+}
+
+.blog-card:hover .blog-card__image img {
+    transform: scale(1.1);
+}
+
+.blog-card__category {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: var(--gradient-accent);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.813rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.blog-card__content {
+    padding: 2rem;
+}
+
+.blog-card__meta {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    color: var(--color-gray);
+}
+
+.blog-card__meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.blog-card__meta i {
+    color: var(--color-coral);
+}
+
+.blog-card__title {
+    font-size: 1.375rem;
+    margin-bottom: 1rem;
+    color: var(--color-navy);
+    line-height: 1.4;
+}
+
+.blog-card__excerpt {
+    color: var(--color-gray);
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+}
+
+.blog-card__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-coral);
+    font-weight: 600;
+    transition: var(--transition-base);
+}
+
+.blog-card__link:hover {
+    gap: 1rem;
+}
+
+.blog-card__link i {
+    font-size: 0.875rem;
+}
+
+/* Newsletter Section */
+.newsletter {
+    background: var(--gradient-primary);
+    color: white;
+}
+
+.newsletter__content {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.newsletter__icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 213, 128, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+}
+
+.newsletter__icon i {
+    font-size: 2rem;
+    color: var(--color-gold);
+}
+
+.newsletter__content h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: white;
+}
+
+.newsletter__content > p {
+    font-size: 1.125rem;
+    line-height: 1.7;
+    margin-bottom: 2rem;
+    opacity: 0.95;
+}
+
+.newsletter__form {
+    display: flex;
+    gap: 1rem;
+    max-width: 500px;
+    margin: 0 auto 1.5rem;
+}
+
+.newsletter__form input {
+    flex: 1;
+    padding: 1rem 1.5rem;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    transition: var(--transition-base);
+}
+
+.newsletter__form input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.newsletter__form input:focus {
+    outline: none;
+    border-color: var(--color-gold);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.newsletter__form button {
+    padding: 1rem 2rem;
+    white-space: nowrap;
+}
+
+.newsletter__note {
+    font-size: 0.875rem;
+    opacity: 0.8;
+}
+
+.newsletter__note i {
+    color: var(--color-gold);
+    margin-right: 0.5rem;
+}
+
+/* Responsive */
+@media screen and (max-width: 768px) {
+    .blog-hero {
+        padding-top: 120px;
+    }
+    
+    .coming-soon__content h2 {
+        font-size: 2rem;
+    }
+    
+    .coming-soon__topics {
+        padding: 2rem 1.5rem;
+    }
+    
+    .blog-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .newsletter__form {
+        flex-direction: column;
+    }
+    
+    .newsletter__form button {
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .coming-soon__icon {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .coming-soon__icon i {
+        font-size: 2.5rem;
+    }
+    
+    .coming-soon__content h2 {
+        font-size: 1.75rem;
+    }
+    
+    .coming-soon__topics h3 {
+        font-size: 1.25rem;
+    }
+    
+    .coming-soon__topics li {
+        font-size: 1rem;
+    }
+}

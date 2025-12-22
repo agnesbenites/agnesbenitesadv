@@ -1,0 +1,23 @@
+# Node modules
+node_modules/
+api/node_modules/
+
+# Environment variables
+.env
+api/.env
+
+# Uploads e documentos
+api/uploads/
+api/documents/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

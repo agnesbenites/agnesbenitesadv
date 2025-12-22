@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise de Documentos com IA | Agnes Benites</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        .ai-container {
+            padding-top: 80px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e8eaed 100%);
+        }
+        
+        .ai-hero {
+            background: linear-gradient(135deg, #002147 0%, #003d7a 100%);
+            color: white;
+            padding: 3rem 0 2rem;
+            text-align: center;
+        }
+        
+        .ai-hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .upload-area {
+            background: white;
+            border: 3px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 2rem 0;
+        }
+        
+        .upload-area:hover {
+            border-color: #FF6F61;
+            background: #fff5f4;
+        }
+        
+        .upload-area.dragover {
+            border-color: #FF6F61;
+            background: #fff0ee;
+        }
+        
+        .upload-area i {
+            font-size: 3rem;
+            color: #FF6F61;
+            margin-bottom: 1rem;
+        }
+        
+        .analysis-result {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .clause-card {
+            background: #f8f9fa;
+            border-left: 4px solid #003d7a;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+        }
+        
+        .clause-card.problematic {
+            border-left-color: #FF6F61;
+            background: #fff5f4;
+        }
+        
+        .suggestion-card {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .suggestion-card:hover {
+            border-color: #FF6F61;
+            box-shadow: 0 5px 15px rgba(255, 111, 97, 0.1);
+        }
+        
+        .suggestion-card.selected {
+            border-color: #FF6F61;
+            background: #fff5f4;
+        }
+        
+        .chat-box {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .chat-message {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        
+        .chat-message.user {
+            background: #e3f2fd;
+            margin-left: 2rem;
+        }
+        
+        .chat-message.assistant {
+            background: #f5f5f5;
+            margin-right: 2rem;
+        }
+        
+        .chat-input-area {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin: 0.2rem;
+        }
+        
+        .badge-alta { background: #ffebee; color: #c62828; }
+        .badge-media { background: #fff3e0; color: #ef6c00; }
+        .badge-baixa { background: #e8f5e9; color: #2e7d32; }
+        
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .loading-overlay.show {
+            display: flex;
+        }
+        
+        #analysisSection,
+        #suggestionsSection,
+        #chatSection {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <nav class="nav container">
+            <div class="nav__logo">
+                <a href="index.html" style="color: inherit; text-decoration: none;">
+                    <span class="logo-name">Agnes Benites</span>
+                    <span class="logo-subtitle">Análise IA</span>
+                </a>
+            </div>
+            <div class="nav__menu">
+                <ul class="nav__list">
+                    <li class="nav__item">
+                        <a href="gerador.html" class="nav__link">
+                            <i class="fas fa-file-alt"></i> Gerador
+                        </a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="ai-analise.html" class="nav__link active-link">
+                            <i class="fas fa-robot"></i> Análise IA
+                        </a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="index.html" class="nav__link">
+                            <i class="fas fa-home"></i> Voltar ao Site
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="ai-container">
+        <!-- Hero -->
+        <section class="ai-hero">
+            <div class="container">
+                <h1><i class="fas fa-robot"></i> Análise de Documentos com IA</h1>
+                <p style="font-size: 1.1rem; opacity: 0.9;">
+                    Envie seu contrato e receba sugestões inteligentes de melhorias
+                </p>
+            </div>
+        </section>
+
+        <!-- Upload Section -->
+        <section class="section" id="uploadSection">
+            <div class="container" style="max-width: 900px;">
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt" style="display: none;">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Arraste seu documento aqui</h3>
+                    <p>ou clique para selecionar</p>
+                    <p style="font-size: 0.9rem; color: #6c757d; margin-top: 1rem;">
+                        Formatos aceitos: PDF, DOCX, TXT (máx. 10MB)
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analysis Section -->
+        <section class="section" id="analysisSection">
+            <div class="container" style="max-width: 1000px;">
+                <div class="analysis-result">
+                    <h2><i class="fas fa-chart-line"></i> Análise do Documento</h2>
+                    
+                    <div id="analysisContent"></div>
+                    
+                    <div style="margin-top: 2rem; text-align: center;">
+                        <button onclick="showSuggestionsForm()" class="btn-primary">
+                            <i class="fas fa-lightbulb"></i> Solicitar Alterações
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Suggestions Section -->
+        <section class="section" id="suggestionsSection">
+            <div class="container" style="max-width: 1000px;">
+                <div class="analysis-result">
+                    <h2><i class="fas fa-lightbulb"></i> Sugestões de Alterações</h2>
+                    
+                    <div style="margin: 2rem 0;">
+                        <label style="font-weight: 600; display: block; margin-bottom: 0.5rem;">
+                            O que você gostaria de alterar?
+                        </label>
+                        <textarea 
+                            id="userRequest" 
+                            rows="3" 
+                            style="width: 100%; padding: 1rem; border: 2px solid #dee2e6; border-radius: 8px;"
+                            placeholder='Ex: "Remover a cláusula de multa" ou "Adicionar isenção de responsabilidade"'
+                        ></textarea>
+                        <button onclick="requestSuggestions()" class="btn-primary" style="margin-top: 1rem;">
+                            <i class="fas fa-magic"></i> Gerar Sugestões
+                        </button>
+                    </div>
+                    
+                    <div id="suggestionsContent" style="margin-top: 2rem;"></div>
+                    
+                    <div id="applyChangesBtn" style="margin-top: 2rem; text-align: center; display: none;">
+                        <button onclick="applySelectedChanges()" class="btn-primary">
+                            <i class="fas fa-check"></i> Aplicar Alterações Selecionadas
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chat Section -->
+        <section class="section" id="chatSection">
+            <div class="container" style="max-width: 900px;">
+                <div class="analysis-result">
+                    <h2><i class="fas fa-comments"></i> Chat com IA</h2>
+                    
+                    <div class="chat-box" id="chatBox"></div>
+                    
+                    <div class="chat-input-area">
+                        <input 
+                            type="text" 
+                            id="chatInput" 
+                            class="chat-input"
+                            placeholder="Pergunte sobre o documento ou peça alterações..."
+                            onkeypress="if(event.key==='Enter') sendChatMessage()"
+                        >
+                        <button onclick="sendChatMessage()" class="btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div style="text-align: center; color: white;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+            <p style="font-size: 1.2rem; font-weight: 600;" id="loadingMessage">Processando...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="ai-analise.js"></script>
+</body>
+</html>

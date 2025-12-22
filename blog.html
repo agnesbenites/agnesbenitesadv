@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Blog Agnes Benites - Artigos sobre Direito Digital, Contratos, Compliance e LGPD">
+    <title>Blog | Agnes Benites - Consultoria Jurídica</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="blog-styles.css">
+</head>
+<body>
+    <!-- WhatsApp Floating Button -->
+    <a href="https://wa.me/5511977135615?text=Olá!%20Gostaria%20de%20agendar%20uma%20consultoria%20jurídica" 
+       class="whatsapp-float" 
+       target="_blank" 
+       aria-label="Contato via WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <!-- Header/Navigation -->
+    <header class="header" id="header">
+        <nav class="nav container">
+            <a href="index.html" class="nav__logo">
+                <span class="logo-name">Agnes Benites</span>
+                <span class="logo-subtitle">Consultoria Jurídica</span>
+            </a>
+
+            <div class="nav__menu" id="nav-menu">
+                <ul class="nav__list">
+                    <li class="nav__item">
+                        <a href="index.html" class="nav__link">Home</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="index.html#servicos" class="nav__link">Serviços</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="index.html#sobre" class="nav__link">Sobre</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="index.html#contato" class="nav__link">Contato</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="blog.html" class="nav__link active-link">Blog</a>
+                    </li>
+                </ul>
+                <div class="nav__close" id="nav-close">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+
+            <div class="nav__toggle" id="nav-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Blog Hero -->
+        <section class="blog-hero section">
+            <div class="container">
+                <div class="blog-hero__content">
+                    <span class="section__subtitle" data-aos="fade-up">Conhecimento Compartilhado</span>
+                    <h1 class="section__title" data-aos="fade-up" data-aos-delay="100">Blog Jurídico</h1>
+                    <p class="section__description" data-aos="fade-up" data-aos-delay="200">
+                        Artigos sobre Direito Digital, Contratos, Compliance, LGPD e muito mais
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Coming Soon Section -->
+        <section class="coming-soon section">
+            <div class="container">
+                <div class="coming-soon__content" data-aos="fade-up">
+                    <div class="coming-soon__icon">
+                        <i class="fas fa-blog"></i>
+                    </div>
+                    <h2>Em Breve!</h2>
+                    <p>
+                        Estamos preparando conteúdos exclusivos sobre temas relevantes do Direito Digital, 
+                        Contratos, Compliance e LGPD para ajudar você e sua empresa a navegar pelo mundo 
+                        jurídico com mais segurança.
+                    </p>
+                    <div class="coming-soon__topics">
+                        <h3>Temas que serão abordados:</h3>
+                        <ul>
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Guias práticos sobre elaboração de contratos</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Novidades e atualizações sobre LGPD</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Dicas de compliance para startups e PMEs</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Legal Design e simplificação jurídica</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Casos práticos e análises jurídicas</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <p class="coming-soon__cta">
+                        Quer ser avisado quando publicarmos novos artigos?
+                    </p>
+                    <a href="mailto:agnesbenites@gmail.com?subject=Quero receber novidades do blog" 
+                       class="button button--primary">
+                        <i class="fas fa-envelope"></i>
+                        Cadastre-se para Novidades
+                    </a>
+                </div>
+
+                <!-- Blog Preview Grid (for future posts) -->
+                <div class="blog-grid" style="display: none;">
+                    <!-- This grid will be visible when you add blog posts -->
+                    <article class="blog-card" data-aos="fade-up">
+                        <div class="blog-card__image">
+                            <img src="placeholder.jpg" alt="Post title">
+                            <span class="blog-card__category">Contratos</span>
+                        </div>
+                        <div class="blog-card__content">
+                            <div class="blog-card__meta">
+                                <span class="blog-card__date">
+                                    <i class="far fa-calendar"></i>
+                                    15 Dez 2025
+                                </span>
+                                <span class="blog-card__read-time">
+                                    <i class="far fa-clock"></i>
+                                    5 min de leitura
+                                </span>
+                            </div>
+                            <h3 class="blog-card__title">Título do Post</h3>
+                            <p class="blog-card__excerpt">
+                                Breve descrição do conteúdo do artigo para atrair o leitor...
+                            </p>
+                            <a href="#" class="blog-card__link">
+                                Ler mais
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Newsletter Section -->
+        <section class="newsletter section">
+            <div class="container">
+                <div class="newsletter__content" data-aos="fade-up">
+                    <div class="newsletter__icon">
+                        <i class="fas fa-envelope-open-text"></i>
+                    </div>
+                    <h2>Fique por Dentro</h2>
+                    <p>
+                        Receba em primeira mão nossos artigos, dicas jurídicas e atualizações sobre 
+                        Direito Digital e LGPD diretamente no seu e-mail.
+                    </p>
+                    <form class="newsletter__form" id="newsletter-form">
+                        <input type="email" 
+                               placeholder="Seu melhor e-mail" 
+                               required>
+                        <button type="submit" class="button button--primary">
+                            <i class="fas fa-paper-plane"></i>
+                            Cadastrar
+                        </button>
+                    </form>
+                    <p class="newsletter__note">
+                        <i class="fas fa-lock"></i>
+                        Seus dados estão seguros. Respeitamos sua privacidade conforme a LGPD.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__content">
+                <div class="footer__section">
+                    <h3 class="footer__title">Agnes Benites</h3>
+                    <p class="footer__description">
+                        Consultoria Jurídica Online especializada em Contratos, Compliance e LGPD. 
+                        Advocacia preventiva e digital para empresas e pessoas físicas.
+                    </p>
+                    <div class="footer__social">
+                        <a href="#" class="social-link" aria-label="LinkedIn">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="#" class="social-link" aria-label="Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="mailto:agnesbenites@gmail.com" class="social-link" aria-label="E-mail">
+                            <i class="fas fa-envelope"></i>
+                        </a>
+                        <a href="https://wa.me/5511977135615" target="_blank" class="social-link" aria-label="WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="footer__section">
+                    <h4 class="footer__subtitle">Links Rápidos</h4>
+                    <ul class="footer__links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="index.html#servicos">Serviços</a></li>
+                        <li><a href="index.html#sobre">Sobre</a></li>
+                        <li><a href="index.html#contato">Contato</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer__section">
+                    <h4 class="footer__subtitle">Serviços</h4>
+                    <ul class="footer__links">
+                        <li><a href="index.html#servicos">Contratos</a></li>
+                        <li><a href="index.html#servicos">Compliance</a></li>
+                        <li><a href="index.html#servicos">LGPD</a></li>
+                        <li><a href="index.html#servicos">Procurações</a></li>
+                        <li><a href="index.html#servicos">Consultoria PJ</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer__section">
+                    <h4 class="footer__subtitle">Contato</h4>
+                    <ul class="footer__contact">
+                        <li>
+                            <i class="fas fa-phone"></i>
+                            <a href="https://wa.me/5511977135615" target="_blank">(11) 97713-5615</a>
+                        </li>
+                        <li>
+                            <i class="fas fa-envelope"></i>
+                            <a href="mailto:agnesbenites@gmail.com">agnesbenites@gmail.com</a>
+                        </li>
+                        <li>
+                            <i class="fas fa-clock"></i>
+                            <span>Seg-Sex: 10h às 19h</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>São Paulo, SP</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer__bottom">
+                <p>&copy; 2025 Agnes Benites. Todos os direitos reservados.</p>
+                <p class="footer__note">
+                    Valores praticados conforme 
+                    <a href="https://www.oabsp.org.br/upload/1885288261.pdf" target="_blank" rel="noopener">
+                        Tabela de Honorários da OAB SP
+                    </a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+    <script>
+        // Newsletter form handler
+        const newsletterForm = document.getElementById('newsletter-form');
+        if (newsletterForm) {
+            newsletterForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = newsletterForm.querySelector('input[type="email"]').value;
+                
+                // Redirect to email with subscription request
+                window.location.href = `mailto:agnesbenites@gmail.com?subject=Cadastro Newsletter Blog&body=Olá! Gostaria de me cadastrar na newsletter do blog.%0D%0A%0D%0AMeu e-mail: ${email}`;
+                
+                // Show success message
+                alert('Obrigada pelo interesse! Seu cliente de e-mail será aberto para confirmar o cadastro.');
+                newsletterForm.reset();
+            });
+        }
+    </script>
+</body>
+</html>
