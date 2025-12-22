@@ -20,6 +20,7 @@ EXPOSE 3000
 
 # Variável de ambiente
 ENV NODE_ENV=production
+ENV PORT=3000
 
-# Comando de inicialização (SEM cd!)
+# Comando de inicialização
 CMD ["node", "server.js"]
