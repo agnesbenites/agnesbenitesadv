@@ -1,26 +1,40 @@
 FROM node:18-alpine
 
-# 1. Instala Chromium e dependências MÍNIMAS
+# Instala fontes básicas para PDFKit funcionar corretamente
 RUN apk add --no-cache \
-    chromium \
-    nss \
+    ttf-freefont \
+    fontconfig \
     freetype \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont
+    && rm -rf /var/cache/apk/*
 
-# 2. Variáveis Puppeteer
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV PUPPETEER_EXECUTable_PATH=/usr/bin/chromium-browser
+# Variáveis de ambiente
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# 3. Configuração da aplicação
-WORKDIR /app
-COPY api/package*.json ./
-RUN npm ci --only=production
-COPY api/ ./
-RUN mkdir -p /data/documents
+# Evita problemas com puppeteer/chromium (se algum módulo tentar instalar)
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/false
 
+# Diretório de trabalho
+WORKDIR /app
+
+# Copia arquivos de dependência primeiro (para cache eficiente)
+COPY api/package*.json ./
+
+# Instala dependências de produção
+RUN npm ci --only=production
+
+# Copia o código da aplicação
+COPY api/ ./
+
+# Cria diretório para documentos com permissões adequadas
+RUN mkdir -p /data/documents && chown -R node:node /data
+
+# Muda para usuário não-root (mais seguro)
+USER node
+
+# Porta da aplicação
 EXPOSE 3000
+
+# Comando de inicialização
 CMD ["node", "server.js"]
