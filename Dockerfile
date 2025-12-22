@@ -15,11 +15,12 @@ ENV npm_config_ignore_engines=true
 # Diretório de trabalho
 WORKDIR /app
 
-# IMPORTANTE: Copia os arquivos da pasta api/
-COPY api/package*.json ./
+# Copia apenas package.json (sem lock file)
+COPY api/package.json ./
 
-# Instala dependências
-RUN npm ci --omit=dev --ignore-scripts 2>/dev/null || npm install --production --ignore-engines
+# Limpa cache do npm e instala dependências do zero
+RUN npm cache clean --force && \
+    npm install --production --ignore-engines --no-package-lock
 
 # Copia o código da pasta api/
 COPY api/ ./
