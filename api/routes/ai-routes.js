@@ -1,250 +1,241 @@
 const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs').promises;
-const aiService = require('../services/ai-service');
-const extractionService = require('../services/extraction-service');
-
 const router = express.Router();
+const multer = require('multer');
+const { getGeminiService } = require('../services/gemini-service');
 
-// Configurar upload de arquivos
-const storage = multer.diskStorage({
-    destination: async (req, file, cb) => {
-        const uploadDir = path.join(__dirname, '../uploads');
-        await fs.mkdir(uploadDir, { recursive: true });
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueName = `${Date.now()}-${file.originalname}`;
-        cb(null, uniqueName);
-    }
-});
-
+// Configuração do multer para upload de arquivos
 const upload = multer({
-    storage,
-    limits: { fileSize: 10 * 1024 * 1024 },
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB max
+    },
     fileFilter: (req, file, cb) => {
-        if (extractionService.isSupportedFileType(file.originalname)) {
+        const allowedTypes = ['application/pdf', 'application/msword', 
+                             'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                             'text/plain'];
+        
+        if (allowedTypes.includes(file.mimetype)) {
             cb(null, true);
         } else {
-            cb(new Error('Tipo de arquivo não suportado. Use PDF, DOCX ou TXT.'));
+            cb(new Error('Tipo de arquivo não suportado. Use PDF, DOC, DOCX ou TXT.'));
         }
     }
 });
 
-// Upload e análise
-router.post('/upload', upload.single('document'), async (req, res) => {
+// ==================== ANÁLISE DE DOCUMENTO ====================
+
+/**
+ * POST /api/ai/analyze
+ * Analisa documento jurídico completo
+ */
+router.post('/analyze', upload.single('document'), async (req, res) => {
     try {
-        if (!req.file) {
+        console.log('📄 Recebida requisição de análise de documento');
+
+        let documentText = '';
+
+        // Se veio arquivo
+        if (req.file) {
+            const fileBuffer = req.file.buffer;
+            
+            // Converter para texto baseado no tipo
+            if (req.file.mimetype === 'text/plain') {
+                documentText = fileBuffer.toString('utf-8');
+            } else if (req.file.mimetype === 'application/pdf') {
+                // Para PDF, extrair texto (simplificado - sem pdf-parse)
+                documentText = fileBuffer.toString('utf-8');
+            } else {
+                // Para outros formatos, tentar conversão básica
+                documentText = fileBuffer.toString('utf-8');
+            }
+        }
+        // Se veio texto direto
+        else if (req.body.text) {
+            documentText = req.body.text;
+        }
+        else {
             return res.status(400).json({
                 success: false,
-                error: 'Nenhum arquivo enviado'
+                error: 'Nenhum documento ou texto fornecido'
             });
         }
-        
-        const fileType = extractionService.getFileType(req.file.filename);
-        const extractedText = await extractionService.extractTextFromFile(
-            req.file.path,
-            fileType
-        );
-        
-        const analysis = await aiService.analyzeDocument(extractedText);
-        
-        const documentId = `ai_doc_${Date.now()}`;
-        const contextData = {
-            documentId,
-            originalFilename: req.file.originalname,
-            uploadedAt: new Date().toISOString(),
-            extractedText,
-            analysis: analysis.analysis
-        };
-        
-        const contextPath = path.join(__dirname, '../uploads', `${documentId}_context.json`);
-        await fs.writeFile(contextPath, JSON.stringify(contextData, null, 2));
-        
+
+        if (!documentText || documentText.length < 50) {
+            return res.status(400).json({
+                success: false,
+                error: 'Documento muito curto ou inválido'
+            });
+        }
+
+        console.log(`📝 Analisando documento com ${documentText.length} caracteres...`);
+
+        const gemini = getGeminiService();
+        const analysis = await gemini.analyzeDocument(documentText);
+
         res.json({
             success: true,
-            documentId,
-            filename: req.file.originalname,
-            analysis: analysis.analysis,
-            message: 'Documento analisado com sucesso!'
+            analysis,
+            documentLength: documentText.length,
+            timestamp: new Date().toISOString()
         });
-        
+
     } catch (error) {
-        console.error('❌ Erro no upload:', error);
+        console.error('❌ Erro na análise:', error);
         res.status(500).json({
             success: false,
-            error: error.message
+            error: 'Erro ao analisar documento',
+            message: error.message
         });
     }
 });
 
-// Sugestões de alterações
-router.post('/suggest', async (req, res) => {
+// ==================== PERGUNTA SOBRE DOCUMENTO ====================
+
+/**
+ * POST /api/ai/ask
+ * Faz pergunta específica sobre documento
+ */
+router.post('/ask', async (req, res) => {
     try {
-        const { documentId, userRequest } = req.body;
-        
-        if (!documentId || !userRequest) {
+        const { documentText, question } = req.body;
+
+        if (!documentText || !question) {
             return res.status(400).json({
                 success: false,
-                error: 'documentId e userRequest são obrigatórios'
+                error: 'Documento e pergunta são obrigatórios'
             });
         }
-        
-        const contextPath = path.join(__dirname, '../uploads', `${documentId}_context.json`);
-        const contextData = JSON.parse(await fs.readFile(contextPath, 'utf-8'));
-        
-        const suggestions = await aiService.suggestChanges(
-            contextData.analysis,
-            userRequest
-        );
-        
+
+        console.log(`❓ Pergunta: "${question.substring(0, 100)}..."`);
+
+        const gemini = getGeminiService();
+        const answer = await gemini.answerQuestion(documentText, question);
+
         res.json({
             success: true,
-            documentId,
-            userRequest,
-            suggestions: suggestions.suggestions
+            question,
+            answer,
+            timestamp: new Date().toISOString()
         });
-        
+
+    } catch (error) {
+        console.error('❌ Erro ao responder pergunta:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erro ao processar pergunta',
+            message: error.message
+        });
+    }
+});
+
+// ==================== SUGESTÕES DE MELHORIA ====================
+
+/**
+ * POST /api/ai/suggest
+ * Sugere melhorias para cláusula específica
+ */
+router.post('/suggest', async (req, res) => {
+    try {
+        const { clauseText } = req.body;
+
+        if (!clauseText) {
+            return res.status(400).json({
+                success: false,
+                error: 'Texto da cláusula é obrigatório'
+            });
+        }
+
+        console.log('💡 Gerando sugestões de melhoria...');
+
+        const gemini = getGeminiService();
+        const suggestions = await gemini.suggestImprovements(clauseText);
+
+        res.json({
+            success: true,
+            originalClause: clauseText,
+            suggestions,
+            timestamp: new Date().toISOString()
+        });
+
     } catch (error) {
         console.error('❌ Erro ao gerar sugestões:', error);
         res.status(500).json({
             success: false,
-            error: error.message
+            error: 'Erro ao gerar sugestões',
+            message: error.message
         });
     }
 });
 
-// Aplicar alterações
-router.post('/apply-changes', async (req, res) => {
+// ==================== EXTRAÇÃO DE INFORMAÇÕES ====================
+
+/**
+ * POST /api/ai/extract
+ * Extrai informações específicas do documento
+ */
+router.post('/extract', async (req, res) => {
     try {
-        const { documentId, selectedChanges } = req.body;
-        
-        if (!documentId || !selectedChanges || !Array.isArray(selectedChanges)) {
+        const { documentText, infoType } = req.body;
+
+        if (!documentText) {
             return res.status(400).json({
                 success: false,
-                error: 'documentId e selectedChanges[] são obrigatórios'
+                error: 'Documento é obrigatório'
             });
         }
-        
-        const contextPath = path.join(__dirname, '../uploads', `${documentId}_context.json`);
-        const contextData = JSON.parse(await fs.readFile(contextPath, 'utf-8'));
-        
-        const result = await aiService.applyChanges(
-            contextData.extractedText,
-            selectedChanges
-        );
-        
-        const modifiedPath = path.join(__dirname, '../uploads', `${documentId}_modified.txt`);
-        await fs.writeFile(modifiedPath, result.modifiedDocument);
-        
-        res.json({
-            success: true,
-            documentId,
-            modifiedDocument: result.modifiedDocument,
-            message: 'Alterações aplicadas com sucesso!'
-        });
-        
-    } catch (error) {
-        console.error('❌ Erro ao aplicar alterações:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
 
-// Gerar cláusula específica
-router.post('/generate-clause', async (req, res) => {
-    try {
-        const { clauseType, context } = req.body;
+        const validInfoTypes = ['partes', 'valores', 'prazos', 'obrigacoes', 'clausulas_abusivas'];
         
-        if (!clauseType) {
+        if (infoType && !validInfoTypes.includes(infoType)) {
             return res.status(400).json({
                 success: false,
-                error: 'clauseType é obrigatório'
+                error: `Tipo de informação inválido. Use: ${validInfoTypes.join(', ')}`
             });
         }
-        
-        const result = await aiService.generateClause(clauseType, context || {});
-        
+
+        console.log(`🔍 Extraindo informações: ${infoType || 'geral'}`);
+
+        const gemini = getGeminiService();
+        const extractedInfo = await gemini.extractInfo(documentText, infoType);
+
         res.json({
             success: true,
-            clause: result.clause
+            infoType: infoType || 'geral',
+            extractedInfo,
+            timestamp: new Date().toISOString()
         });
-        
+
     } catch (error) {
-        console.error('❌ Erro ao gerar cláusula:', error);
+        console.error('❌ Erro ao extrair informações:', error);
         res.status(500).json({
             success: false,
-            error: error.message
+            error: 'Erro ao extrair informações',
+            message: error.message
         });
     }
 });
 
-// Chat sobre documento
-router.post('/chat', async (req, res) => {
+// ==================== HEALTH CHECK ====================
+
+/**
+ * GET /api/ai/health
+ * Verifica status do serviço de IA
+ */
+router.get('/health', async (req, res) => {
     try {
-        const { documentId, message, conversationHistory } = req.body;
-        
-        if (!documentId || !message) {
-            return res.status(400).json({
-                success: false,
-                error: 'documentId e message são obrigatórios'
-            });
-        }
-        
-        const contextPath = path.join(__dirname, '../uploads', `${documentId}_context.json`);
-        const contextData = JSON.parse(await fs.readFile(contextPath, 'utf-8'));
-        
-        const result = await aiService.chatAboutDocument(
-            contextData.analysis,
-            conversationHistory || [],
-            message
-        );
-        
+        const gemini = getGeminiService();
+        const hasApiKey = !!gemini.apiKey;
+
         res.json({
             success: true,
-            response: result.response
+            service: 'Gemini AI',
+            status: hasApiKey ? 'configured' : 'missing_api_key',
+            model: 'gemini-pro',
+            provider: 'Google',
+            timestamp: new Date().toISOString()
         });
-        
-    } catch (error) {
-        console.error('❌ Erro no chat:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
 
-// Download documento modificado
-router.get('/download/:documentId', async (req, res) => {
-    try {
-        const { documentId } = req.params;
-        const { format } = req.query;
-        
-        const modifiedPath = path.join(__dirname, '../uploads', `${documentId}_modified.txt`);
-        const modifiedText = await fs.readFile(modifiedPath, 'utf-8');
-        
-        if (format === 'pdf') {
-            const PDFDocument = require('pdfkit');
-            const doc = new PDFDocument({ margin: 50 });
-            
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `attachment; filename="documento-modificado-${documentId}.pdf"`);
-            
-            doc.pipe(res);
-            doc.fontSize(12).font('Helvetica');
-            doc.text(modifiedText, { align: 'justify' });
-            doc.end();
-        } else {
-            res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-            res.setHeader('Content-Disposition', `attachment; filename="documento-modificado-${documentId}.txt"`);
-            res.send(modifiedText);
-        }
-        
     } catch (error) {
-        console.error('❌ Erro ao baixar documento:', error);
         res.status(500).json({
             success: false,
             error: error.message

@@ -1,5 +1,5 @@
 /*==================== CONFIGURAÇÃO DA API ====================*/
-const API_URL = 'http://localhost:3000/api';
+const API_URL = 'https://gerador-documentos-juridicos.onrender.com';
 const MERCADO_PAGO_PUBLIC_KEY = 'APP_USR-494ad744-83f5-452d-a9f4-297c9bec4470';
 
 /*==================== VARIÁVEIS GLOBAIS ====================*/
@@ -10,9 +10,58 @@ let currentDocumentId = null;
 let currentPaymentPreference = null;
 let availableTemplates = [];
 
+/*==================== WAKE UP SERVER (RENDER FREE TIER) ====================*/
+async function wakeUpServer() {
+    try {
+        console.log('🔄 Acordando servidor Render...');
+        showLoading('Preparando sistema...');
+        
+        const response = await fetch(`${API_URL}/health`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            console.log('✅ Servidor acordado e pronto!');
+            return true;
+        } else {
+            console.warn('⚠️ Servidor respondeu com status:', response.status);
+            return false;
+        }
+    } catch (error) {
+        console.warn('⚠️ Servidor ainda iniciando, aguardando...', error.message);
+        // Aguardar mais 3 segundos e tentar novamente
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        try {
+            await fetch(`${API_URL}/health`);
+            console.log('✅ Servidor acordado na segunda tentativa!');
+            return true;
+        } catch {
+            console.error('❌ Não foi possível acordar o servidor');
+            return false;
+        }
+    }
+}
+
 /*==================== INICIALIZAÇÃO ====================*/
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Gerador de Documentos iniciado');
+    
+    // ⚡ IMPORTANTE: Acordar servidor Render antes de carregar templates
+    const serverReady = await wakeUpServer();
+    
+    if (!serverReady) {
+        showError('Servidor temporariamente indisponível. Aguarde alguns segundos e recarregue a página.');
+        hideLoading();
+        return;
+    }
+    
+    // Aguardar 2 segundos extras para garantir que servidor está 100% pronto
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    hideLoading();
     
     // Carregar SDK do Mercado Pago
     loadMercadoPagoSDK();
@@ -42,7 +91,7 @@ async function loadTemplatesFromAPI() {
     try {
         console.log('📥 Carregando templates do MongoDB...');
         
-        const response = await fetch(`${API_URL}/templates`);
+        const response = await fetch(`${API_URL}/api/templates`);
         
         if (!response.ok) {
             throw new Error(`Erro ao carregar templates: ${response.status}`);
@@ -265,7 +314,7 @@ async function proceedToPayment() {
         showLoading('Criando preferência de pagamento...');
         
         // Criar pedido na API
-        const response = await fetch(`${API_URL}/create-payment`, {
+        const response = await fetch(`${API_URL}/api/create-payment`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -411,7 +460,7 @@ async function downloadDocument() {
     try {
         showLoading('Gerando seu documento PDF...');
         
-        const response = await fetch(`${API_URL}/generate`, {
+        const response = await fetch(`${API_URL}/api/generate`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -458,7 +507,7 @@ async function downloadDocument() {
 }
 
 async function generateDocumentDirect() {
-    const response = await fetch(`${API_URL}/generate`, {
+    const response = await fetch(`${API_URL}/api/generate`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
