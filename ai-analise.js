@@ -2,7 +2,7 @@
  * Frontend JavaScript para Análise de Documentos com IA
  */
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = 'https://gerador-documentos-juridicos.onrender.com/api';
 
 let currentDocumentId = null;
 let currentAnalysis = null;

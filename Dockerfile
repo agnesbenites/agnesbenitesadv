@@ -1,39 +1,26 @@
-FROM node:18-alpine
+FROM node:18-slim
 
-# Instala fontes básicas para PDFKit
-RUN apk add --no-cache \
-    ttf-freefont \
-    fontconfig \
-    freetype
+# Instala bibliotecas necessárias para processamento de imagem/pdf
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
 
-# Variáveis de ambiente
-ENV NODE_ENV=production
-ENV PORT=3000
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV npm_config_ignore_engines=true
-
-# Diretório de trabalho
 WORKDIR /app
 
-# Copia apenas package.json (sem lock file)
-COPY api/package.json ./
+# Copia arquivos de dependência
+COPY package*.json ./
 
-# Limpa cache do npm e instala dependências do zero
-RUN npm cache clean --force && \
-    npm install --production --ignore-engines --no-package-lock
+# Instala dependências
+RUN npm install --production
 
-# Copia o código da pasta api/
-COPY api/ ./
+# Copia o restante do código
+COPY . .
 
-# Cria diretório para documentos
-RUN mkdir -p /data/documents
+# Garante que a pasta de uploads existe
+RUN mkdir -p uploads
 
-# Porta
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
-
-# Comando
 CMD ["node", "server.js"]
