@@ -5,169 +5,65 @@ class GeminiService {
     if (!process.env.GEMINI_API_KEY) {
       throw new Error('❌ GEMINI_API_KEY não configurada no ambiente');
     }
-
     this.apiKey = process.env.GEMINI_API_KEY;
-
-    // Modelo principal (mais qualidade jurídica)
-    this.model = 'gemini-1.5-pro';
-
-    // Endpoint base
+    this.model = 'gemini-1.5-flash'; // Mais rápido para respostas estruturadas
     this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
   }
 
-  /**
-   * Chamada central ao Gemini
-   */
-  async callGemini(prompt, config = {}) {
+  async callGemini(prompt, config = {}, isJson = false) {
     const url = `${this.baseUrl}/${this.model}:generateContent?key=${this.apiKey}`;
+    
+    const body = {
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: config.temperature ?? 0.1,
+        maxOutputTokens: config.maxOutputTokens ?? 4096,
+        responseMimeType: isJson ? "application/json" : "text/plain"
+      }
+    };
 
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: prompt }]
-          }
-        ],
-        generationConfig: {
-          temperature: config.temperature ?? 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: config.maxOutputTokens ?? 2048
-        },
-        safetySettings: [
-          { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
-          { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
-          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
-        ]
-      })
+      body: JSON.stringify(body)
     });
 
     const data = await response.json();
-
     if (!response.ok) {
-      const message = data?.error?.message || 'Erro desconhecido no Gemini';
-      throw new Error(`Gemini API Error: ${message}`);
+      throw new Error(`Gemini API Error: ${data?.error?.message || 'Erro desconhecido'}`);
     }
 
-    const text =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!text) {
-      throw new Error('Resposta vazia do Gemini');
-    }
-
-    return text;
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    return isJson ? JSON.parse(text) : text;
   }
 
-  /**
-   * Analisa documento jurídico
-   */
-  async analyzeDocument(documentText, userQuestion = null) {
-    const prompt = this.buildAnalysisPrompt(documentText, userQuestion);
-    return this.callGemini(prompt, { temperature: 0.7 });
-  }
-
-  /**
-   * Prompt jurídico principal
-   */
-  buildAnalysisPrompt(documentText, userQuestion) {
-    return `
-Você é um advogado contratualista brasileiro, especialista em direito civil, consumidor e proteção de dados.
-
-${userQuestion ? `PERGUNTA DO CLIENTE:\n${userQuestion}\n\n` : ''}
-
-Analise o documento abaixo e apresente:
-
-- Cláusulas problemáticas ou abusivas
-- Explicação clara de cada cláusula relevante
-- Base legal aplicável (CC, CDC, LGPD, CLT, se aplicável)
-- Riscos jurídicos identificados
-- Sugestões objetivas de melhoria
-- Texto sugerido para substituição, quando necessário
-
-DOCUMENTO:
-${documentText.substring(0, 12000)}
-
-ANÁLISE JURÍDICA:
-`.trim();
-  }
-
-  /**
-   * Responde pergunta específica
-   */
-  async answerQuestion(documentText, question) {
-    return this.analyzeDocument(documentText, question);
-  }
-
-  /**
-   * Sugere melhorias em cláusula
-   */
-  async suggestImprovements(clauseText) {
+  async analyzeDocument(documentText) {
+    // Prompt rigoroso para garantir que o JSON combine com o displayAnalysis do frontend
     const prompt = `
-Você é um advogado contratualista no Brasil.
-
-Analise a cláusula abaixo:
-
-${clauseText}
-
-Informe:
-- Problemas jurídicos
-- Fundamentação legal (artigos específicos)
-- Riscos práticos
-- Texto revisado sugerido
-- Justificativa da alteração
-`.trim();
-
-    return this.callGemini(prompt, {
-      temperature: 0.8,
-      maxOutputTokens: 1500
-    });
+      Você é um advogado especialista. Analise o contrato abaixo e retorne um JSON estrito:
+      {
+        "tipo": "string",
+        "objeto": "string",
+        "resumo": "string",
+        "partes": { "contratante": "string", "contratado": "string" },
+        "clausulas_identificadas": [{ "titulo": "string", "conteudo": "string", "categoria": "string" }],
+        "clausulas_problematicas": [{ "problema": "string", "clausula": "string", "risco": "alto|medio|baixo" }],
+        "pontos_atencao": ["string"]
+      }
+      DOCUMENTO: ${documentText.substring(0, 15000)}
+    `;
+    return this.callGemini(prompt, {}, true);
   }
 
-  /**
-   * Extrai informações estruturadas
-   */
-  async extractInfo(documentText, infoType) {
-    const prompts = {
-      partes: 'Identifique as partes envolvidas no contrato.',
-      valores: 'Liste todos os valores monetários mencionados.',
-      prazos: 'Liste prazos, datas e vigências.',
-      obrigacoes: 'Extraia as obrigações principais de cada parte.',
-      clausulas_abusivas: 'Identifique possíveis cláusulas abusivas segundo o CDC.'
-    };
-
-    const instruction = prompts[infoType] || infoType;
-
+  async answerChat(documentText, message, history = []) {
     const prompt = `
-Analise o documento abaixo e ${instruction}
-
-DOCUMENTO:
-${documentText.substring(0, 10000)}
-
-Responda de forma clara e organizada.
-`.trim();
-
-    return this.callGemini(prompt, {
-      temperature: 0.5,
-      maxOutputTokens: 1024
-    });
+      Contexto do Contrato: ${documentText.substring(0, 10000)}
+      Histórico: ${JSON.stringify(history)}
+      Pergunta do Usuário: ${message}
+      Responda de forma jurídica, mas acessível.
+    `;
+    return this.callGemini(prompt, { temperature: 0.7 }, false);
   }
 }
 
-// Singleton
-let instance;
-
-function getGeminiService() {
-  if (!instance) {
-    instance = new GeminiService();
-  }
-  return instance;
-}
-
-module.exports = {
-  GeminiService,
-  getGeminiService
-};
+module.exports = { getGeminiService: () => new GeminiService() };
