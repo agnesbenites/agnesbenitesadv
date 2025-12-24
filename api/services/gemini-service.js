@@ -1,225 +1,173 @@
 const fetch = require('node-fetch');
 
 class GeminiService {
-    constructor() {
-        this.apiKey = process.env.GEMINI_API_KEY;
-        this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent';
-        
-        if (!this.apiKey) {
-            console.warn('⚠️ GEMINI_API_KEY não configurada');
-        }
+  constructor() {
+    if (!process.env.GEMINI_API_KEY) {
+      throw new Error('❌ GEMINI_API_KEY não configurada no ambiente');
     }
 
-    /**
-     * Analisa documento jurídico com Gemini
-     * @param {string} documentText - Texto do documento
-     * @param {string} userQuestion - Pergunta do usuário (opcional)
-     * @returns {Promise<string>} - Análise do documento
-     */
-    async analyzeDocument(documentText, userQuestion = null) {
-        try {
-            const prompt = this.buildAnalysisPrompt(documentText, userQuestion);
-            
-            const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: prompt
-                        }]
-                    }],
-                    generationConfig: {
-                        temperature: 0.7,
-                        topK: 40,
-                        topP: 0.95,
-                        maxOutputTokens: 2048,
-                    },
-                    safetySettings: [
-                        {
-                            category: "HARM_CATEGORY_HARASSMENT",
-                            threshold: "BLOCK_NONE"
-                        },
-                        {
-                            category: "HARM_CATEGORY_HATE_SPEECH",
-                            threshold: "BLOCK_NONE"
-                        },
-                        {
-                            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                            threshold: "BLOCK_NONE"
-                        },
-                        {
-                            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-                            threshold: "BLOCK_NONE"
-                        }
-                    ]
-                })
-            });
+    this.apiKey = process.env.GEMINI_API_KEY;
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(`Gemini API Error: ${error.error?.message || response.statusText}`);
-            }
+    // Modelo principal (mais qualidade jurídica)
+    this.model = 'gemini-1.5-pro';
 
-            const data = await response.json();
-            
-            // Extrair texto da resposta do Gemini
-            const generatedText = data.candidates[0]?.content?.parts[0]?.text;
-            
-            if (!generatedText) {
-                throw new Error('Resposta vazia do Gemini');
-            }
+    // Endpoint base
+    this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
+  }
 
-            return generatedText;
+  /**
+   * Chamada central ao Gemini
+   */
+  async callGemini(prompt, config = {}) {
+    const url = `${this.baseUrl}/${this.model}:generateContent?key=${this.apiKey}`;
 
-        } catch (error) {
-            console.error('❌ Erro no Gemini:', error.message);
-            throw new Error(`Falha ao analisar documento: ${error.message}`);
-        }
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [{ text: prompt }]
+          }
+        ],
+        generationConfig: {
+          temperature: config.temperature ?? 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: config.maxOutputTokens ?? 2048
+        },
+        safetySettings: [
+          { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
+        ]
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const message = data?.error?.message || 'Erro desconhecido no Gemini';
+      throw new Error(`Gemini API Error: ${message}`);
     }
 
-    /**
-     * Constrói o prompt de análise jurídica
-     */
-    buildAnalysisPrompt(documentText, userQuestion) {
-        const basePrompt = `
+    const text =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!text) {
+      throw new Error('Resposta vazia do Gemini');
+    }
+
+    return text;
+  }
+
+  /**
+   * Analisa documento jurídico
+   */
+  async analyzeDocument(documentText, userQuestion = null) {
+    const prompt = this.buildAnalysisPrompt(documentText, userQuestion);
+    return this.callGemini(prompt, { temperature: 0.7 });
+  }
+
+  /**
+   * Prompt jurídico principal
+   */
+  buildAnalysisPrompt(documentText, userQuestion) {
+    return `
+Você é um advogado contratualista brasileiro, especialista em direito civil, consumidor e proteção de dados.
+
+${userQuestion ? `PERGUNTA DO CLIENTE:\n${userQuestion}\n\n` : ''}
+
+Analise o documento abaixo e apresente:
+
+- Cláusulas problemáticas ou abusivas
+- Explicação clara de cada cláusula relevante
+- Base legal aplicável (CC, CDC, LGPD, CLT, se aplicável)
+- Riscos jurídicos identificados
+- Sugestões objetivas de melhoria
+- Texto sugerido para substituição, quando necessário
+
+DOCUMENTO:
+${documentText.substring(0, 12000)}
+
+ANÁLISE JURÍDICA:
+`.trim();
+  }
+
+  /**
+   * Responde pergunta específica
+   */
+  async answerQuestion(documentText, question) {
+    return this.analyzeDocument(documentText, question);
+  }
+
+  /**
+   * Sugere melhorias em cláusula
+   */
+  async suggestImprovements(clauseText) {
+    const prompt = `
 Você é um advogado contratualista no Brasil.
 
-${userQuestion ? `PERGUNTA ESPECÍFICA DO CLIENTE: ${userQuestion}\n\n` : ''}
+Analise a cláusula abaixo:
 
-Analise o seguinte documento e identifique:
-1. Cláusulas problemáticas
-2. O que contém nas cláusulas
-3. Artigos de lei aplicáveis (CC, CDC, LGPD, CLT)
-4. Sugestões de melhoria
-5. Sugestão de textos para alteração se necessário
-
-DOCUMENTO A ANALISAR:
-${documentText.substring(0, 15000)}
-
-ANÁLISE COMPLETA:`;
-
-        return basePrompt;
-    }
-
-    /**
-     * Responde pergunta sobre o documento
-     */
-    async answerQuestion(documentText, question) {
-        return await this.analyzeDocument(documentText, question);
-    }
-
-    /**
-     * Gera sugestões de melhoria para cláusulas
-     */
-    async suggestImprovements(clauseText) {
-        const prompt = `
-Você é um advogado contratualista no Brasil.
-
-Analise a seguinte cláusula contratual:
-
-CLÁUSULA:
 ${clauseText}
 
-Forneça:
-1. Problemas identificados na cláusula
-2. Base legal (cite artigos específicos do CC, CDC, LGPD ou CLT)
-3. Explicação do que está errado e por quê
-4. Sugestão de texto melhorado para substituir a cláusula
-5. Justificativa das mudanças propostas
+Informe:
+- Problemas jurídicos
+- Fundamentação legal (artigos específicos)
+- Riscos práticos
+- Texto revisado sugerido
+- Justificativa da alteração
+`.trim();
 
-Seja prático, objetivo e cite sempre a legislação aplicável.
-`;
+    return this.callGemini(prompt, {
+      temperature: 0.8,
+      maxOutputTokens: 1500
+    });
+  }
 
-        try {
-            const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{ text: prompt }]
-                    }],
-                    generationConfig: {
-                        temperature: 0.8,
-                        maxOutputTokens: 1500,
-                    }
-                })
-            });
+  /**
+   * Extrai informações estruturadas
+   */
+  async extractInfo(documentText, infoType) {
+    const prompts = {
+      partes: 'Identifique as partes envolvidas no contrato.',
+      valores: 'Liste todos os valores monetários mencionados.',
+      prazos: 'Liste prazos, datas e vigências.',
+      obrigacoes: 'Extraia as obrigações principais de cada parte.',
+      clausulas_abusivas: 'Identifique possíveis cláusulas abusivas segundo o CDC.'
+    };
 
-            const data = await response.json();
-            return data.candidates[0]?.content?.parts[0]?.text || 'Erro ao gerar sugestões';
+    const instruction = prompts[infoType] || infoType;
 
-        } catch (error) {
-            console.error('❌ Erro ao gerar sugestões:', error);
-            throw error;
-        }
-    }
-
-    /**
-     * Extrai informações específicas do documento
-     */
-    async extractInfo(documentText, infoType) {
-        const prompts = {
-            'partes': 'Liste as partes envolvidas (contratante, contratado, testemunhas, etc.)',
-            'valores': 'Identifique todos os valores monetários mencionados',
-            'prazos': 'Liste todos os prazos e datas mencionados',
-            'obrigacoes': 'Extraia as principais obrigações de cada parte',
-            'clausulas_abusivas': 'Identifique possíveis cláusulas abusivas segundo o CDC'
-        };
-
-        const specificPrompt = prompts[infoType] || infoType;
-
-        const prompt = `
-Analise o documento abaixo e ${specificPrompt}.
+    const prompt = `
+Analise o documento abaixo e ${instruction}
 
 DOCUMENTO:
 ${documentText.substring(0, 10000)}
 
-Responda de forma estruturada e objetiva.
-`;
+Responda de forma clara e organizada.
+`.trim();
 
-        try {
-            const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{ text: prompt }]
-                    }],
-                    generationConfig: {
-                        temperature: 0.5,
-                        maxOutputTokens: 1024,
-                    }
-                })
-            });
-
-            const data = await response.json();
-            return data.candidates[0]?.content?.parts[0]?.text || 'Informação não encontrada';
-
-        } catch (error) {
-            console.error('❌ Erro ao extrair informações:', error);
-            throw error;
-        }
-    }
+    return this.callGemini(prompt, {
+      temperature: 0.5,
+      maxOutputTokens: 1024
+    });
+  }
 }
 
-// Singleton instance
-let geminiInstance = null;
+// Singleton
+let instance;
 
 function getGeminiService() {
-    if (!geminiInstance) {
-        geminiInstance = new GeminiService();
-    }
-    return geminiInstance;
+  if (!instance) {
+    instance = new GeminiService();
+  }
+  return instance;
 }
 
 module.exports = {
-    GeminiService,
-    getGeminiService
+  GeminiService,
+  getGeminiService
 };
