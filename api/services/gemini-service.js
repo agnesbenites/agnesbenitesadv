@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 class GeminiService {
     constructor() {
         this.apiKey = process.env.GEMINI_API_KEY;
-        this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent';
+        this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
         
         if (!this.apiKey) {
             console.warn('⚠️ GEMINI_API_KEY não configurada');
