@@ -6,10 +6,11 @@ const path = require('path');
 require('dotenv').config();
 
 // 1. Importação das Rotas da IA (Isso garante que aiRoutes não seja undefined)
-const aiRoutes = require('./routes/ai-routes');
+const aiRoutes = require('./routes/ai-routes'); 
+app.use('/api/ai', aiRoutes);
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 3000;
 
 // Configuração de pastas (importante para o Render)
 const uploadsDir = path.join(__dirname, 'uploads');
