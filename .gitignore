@@ -1,9 +1,11 @@
-# Node modules
+# Node
 node_modules/
 api/node_modules/
 
 # Environment variables
 .env
+.env.local
+.env.production
 api/.env
 
 # Uploads e documentos
@@ -21,19 +23,3 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
-notepad .dockerignore
-```
-
-**Cole isso:**
-```
-node_modules
-api/node_modules
-npm-debug.log
-.env
-.git
-.gitignore
-README.md
-.DS_Store
-api/documents
-api/uploads
-*.log
