@@ -230,7 +230,7 @@ router.get('/health', async (req, res) => {
             success: true,
             service: 'Gemini AI',
             status: hasApiKey ? 'configured' : 'missing_api_key',
-            model: 'gemini-pro',
+            model: 'gemini-1.5-flash',
             provider: 'Google',
             timestamp: new Date().toISOString()
         });
