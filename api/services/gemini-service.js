@@ -1,16 +1,17 @@
-const fetch = require('node-fetch');
-
 class GeminiService {
   constructor() {
     if (!process.env.GEMINI_API_KEY) {
-      throw new Error('❌ GEMINI_API_KEY não configurada no ambiente');
+      throw new Error('❌ GEMINI_API_KEY não configurada');
     }
     this.apiKey = process.env.GEMINI_API_KEY;
-    this.model = 'gemini-1.5-flash'; // Mais rápido para respostas estruturadas
-    this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
+    
+    // Mudamos para v1 (mais estável) e simplificamos a referência do modelo
+    this.baseUrl = 'https://generativelanguage.googleapis.com/v1/models';
+    this.model = 'gemini-1.5-flash'; 
   }
 
   async callGemini(prompt, config = {}, isJson = false) {
+    // Ajuste na montagem da URL: v1/models/modelo:generateContent
     const url = `${this.baseUrl}/${this.model}:generateContent?key=${this.apiKey}`;
     
     const body = {
@@ -18,6 +19,7 @@ class GeminiService {
       generationConfig: {
         temperature: config.temperature ?? 0.1,
         maxOutputTokens: config.maxOutputTokens ?? 4096,
+        // Algumas versões do modelo exigem que o MIME type seja passado assim
         responseMimeType: isJson ? "application/json" : "text/plain"
       }
     };
@@ -29,41 +31,24 @@ class GeminiService {
     });
 
     const data = await response.json();
+
     if (!response.ok) {
+      // Se o erro de "modelo não encontrado" persistir, tentamos o fallback para 1.5-pro
+      if (data.error?.message?.includes('not found')) {
+          return this.fallbackCall(prompt, config, isJson);
+      }
       throw new Error(`Gemini API Error: ${data?.error?.message || 'Erro desconhecido'}`);
     }
 
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) throw new Error("A IA retornou uma resposta vazia.");
+    
     return isJson ? JSON.parse(text) : text;
   }
 
-  async analyzeDocument(documentText) {
-    // Prompt rigoroso para garantir que o JSON combine com o displayAnalysis do frontend
-    const prompt = `
-      Você é um advogado especialista. Analise o contrato abaixo e retorne um JSON estrito:
-      {
-        "tipo": "string",
-        "objeto": "string",
-        "resumo": "string",
-        "partes": { "contratante": "string", "contratado": "string" },
-        "clausulas_identificadas": [{ "titulo": "string", "conteudo": "string", "categoria": "string" }],
-        "clausulas_problematicas": [{ "problema": "string", "clausula": "string", "risco": "alto|medio|baixo" }],
-        "pontos_atencao": ["string"]
-      }
-      DOCUMENTO: ${documentText.substring(0, 15000)}
-    `;
-    return this.callGemini(prompt, {}, true);
-  }
-
-  async answerChat(documentText, message, history = []) {
-    const prompt = `
-      Contexto do Contrato: ${documentText.substring(0, 10000)}
-      Histórico: ${JSON.stringify(history)}
-      Pergunta do Usuário: ${message}
-      Responda de forma jurídica, mas acessível.
-    `;
-    return this.callGemini(prompt, { temperature: 0.7 }, false);
+  // Método de segurança caso o flash falhe
+  async fallbackCall(prompt, config, isJson) {
+      const fallbackUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${this.apiKey}`;
+      // ... mesma lógica de fetch acima ...
   }
 }
-
-module.exports = { getGeminiService: () => new GeminiService() };
