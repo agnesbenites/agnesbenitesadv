@@ -3,11 +3,11 @@
  */
 
 // 1. CONFIGURAÇÃO DE AMBIENTE E ENDPOINTS
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const isLocal = window.location.hostname === 'localhost';
 
 // URL Base dinâmica
 const BASE_URL = isLocal 
-    ? 'http://localhost:10000/api/ai' 
+    ? 'http://localhost:3000/api/ai' 
     : 'https://gerador-documentos-juridicos.onrender.com/api/ai';
 
 // Mapa centralizado de rotas (Substitui qualquer menção a /generate)
