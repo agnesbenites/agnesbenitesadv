@@ -6,7 +6,6 @@ class GeminiService {
       throw new Error('❌ GEMINI_API_KEY não configurada no ambiente');
     }
     this.apiKey = process.env.GEMINI_API_KEY;
-    // Usando v1 estável e modelo flash
     this.baseUrl = 'https://generativelanguage.googleapis.com/v1/models';
     this.model = 'gemini-1.5-flash';
   }
@@ -19,6 +18,7 @@ class GeminiService {
       generationConfig: {
         temperature: config.temperature ?? 0.1,
         maxOutputTokens: config.maxOutputTokens ?? 4096,
+        // Mantemos o MIME Type mas o parser abaixo é o que salva o dia
         responseMimeType: isJson ? "application/json" : "text/plain"
       }
     };
@@ -35,40 +35,34 @@ class GeminiService {
       throw new Error(`Gemini API Error: ${data?.error?.message || 'Erro desconhecido'}`);
     }
 
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    let text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) throw new Error("A IA retornou uma resposta vazia.");
+
+    if (isJson) {
+      try {
+        // Limpeza de segurança: remove possíveis crases de markdown (```json ... ```)
+        const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        return JSON.parse(cleanJson);
+      } catch (e) {
+        console.error("Erro ao parsear JSON da IA. Texto bruto:", text);
+        throw new Error("A resposta da IA não é um JSON válido.");
+      }
+    }
     
-    return isJson ? JSON.parse(text) : text;
+    return text;
   }
 
   async analyzeDocument(documentText) {
-    const prompt = `
-      Você é um advogado especialista. Analise o contrato abaixo e retorne um JSON estrito:
-      {
-        "tipo": "Tipo do contrato",
-        "objeto": "Resumo do que se trata",
-        "resumo": "Texto explicativo",
-        "partes": { "contratante": "Nome", "contratado": "Nome" },
-        "clausulas_identificadas": [{ "titulo": "string", "conteudo": "string", "categoria": "string" }],
-        "clausulas_problematicas": [{ "problema": "string", "clausula": "string", "risco": "alto|medio|baixo" }],
-        "pontos_atencao": ["string"]
-      }
-      DOCUMENTO: ${documentText.substring(0, 15000)}
-    `;
-    return this.callGemini(prompt, {}, true);
+    const prompt = `Analise o contrato e retorne um JSON com: tipo, objeto, resumo, partes (contratante, contratado), clausulas_identificadas (array de titulo, conteudo, categoria), clausulas_problematicas (array de problema, clausula, risco), pontos_atencao (array). DOCUMENTO: ${documentText.substring(0, 15000)}`;
+    return this.callGemini(prompt, { temperature: 0.1 }, true);
   }
 
   async answerChat(documentText, message, history = []) {
-    const prompt = `
-      Contexto do Contrato: ${documentText.substring(0, 10000)}
-      Pergunta do Usuário: ${message}
-      Responda de forma jurídica, mas acessível.
-    `;
+    const prompt = `Contexto: ${documentText.substring(0, 10000)}\nPergunta: ${message}`;
     return this.callGemini(prompt, { temperature: 0.7 }, false);
   }
 }
 
-// EXPORTAÇÃO CORRETA PARA O SERVER.JS
 module.exports = { 
   getGeminiService: () => new GeminiService() 
 };
