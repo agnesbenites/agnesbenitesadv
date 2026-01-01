@@ -119,7 +119,7 @@ function showTemplatesError() {
                 <h3 style="color: #002147; margin-bottom: 1rem;">Erro ao Carregar Templates</h3>
                 <p style="color: #6c757d; margin-bottom: 1.5rem;">
                     Não foi possível conectar ao servidor.<br>
-                    Verifique se o servidor está rodando em <code>localhost:3000</code>
+                    Por favor, tente novamente em alguns instantes.
                 </p>
                 <button onclick="loadTemplatesFromAPI()" class="btn-primary">
                     <i class="fas fa-sync-alt"></i> Tentar Novamente
@@ -229,138 +229,88 @@ function generateDataFields() {
     }
     
     selectedStyleData.fields.forEach(field => {
-        const fieldGroup = createFieldElement(field);
+        const fieldGroup = document.createElement('div');
+        fieldGroup.className = 'field-group';
+        
+        const label = document.createElement('label');
+        label.className = 'field-label';
+        label.textContent = field.label;
+        if (field.required) {
+            label.innerHTML += ' <span style="color: #FF6F61;">*</span>';
+        }
+        
+        let input;
+        
+        if (field.type === 'textarea') {
+            input = document.createElement('textarea');
+            input.className = 'field-textarea';
+        } else {
+            input = document.createElement('input');
+            input.className = 'field-input';
+            input.type = field.type || 'text';
+        }
+        
+        input.id = field.name;
+        input.placeholder = field.placeholder || '';
+        if (field.required) {
+            input.required = true;
+        }
+        
+        // Adicionar formatação para campos especiais
+        if (field.type === 'currency') {
+            input.type = 'text';
+            input.addEventListener('input', (e) => formatCurrency(e.target));
+        }
+        
+        if (field.type === 'document') {
+            input.type = 'text';
+            input.addEventListener('input', (e) => formatDocument(e.target));
+        }
+        
+        fieldGroup.appendChild(label);
+        fieldGroup.appendChild(input);
         dataFields.appendChild(fieldGroup);
     });
 }
 
-function createFieldElement(field) {
-    const fieldGroup = document.createElement('div');
-    fieldGroup.className = 'field-group';
-    
-    const label = document.createElement('label');
-    label.className = 'field-label';
-    label.htmlFor = `field_${field.id}`;
-    label.textContent = field.label;
-    if (field.required) {
-        label.innerHTML += ' <span style="color: #FF6F61;">*</span>';
-    }
-    
-    let input;
-    if (field.type === 'textarea') {
-        input = document.createElement('textarea');
-        input.className = 'field-textarea';
-        input.rows = 4;
-    } else {
-        input = document.createElement('input');
-        input.type = field.type || 'text';
-        input.className = 'field-input';
-    }
-    
-    input.id = `field_${field.id}`;
-    input.name = field.id;
-    input.required = field.required;
-    input.placeholder = `Digite ${field.label.toLowerCase()}`;
-    
-    if (field.id.includes('doc') || field.id.includes('cpf') || field.id.includes('cnpj')) {
-        input.addEventListener('input', function() {
-            formatDocument(this);
-        });
-    } else if (field.id.includes('valor') || field.id.includes('preco')) {
-        input.addEventListener('blur', function() {
-            formatCurrency(this);
-        });
-    }
-    
-    fieldGroup.appendChild(label);
-    fieldGroup.appendChild(input);
-    
-    return fieldGroup;
-}
-
 /*==================== PROSSEGUIR PARA PAGAMENTO ====================*/
-async function proceedToPayment() {
-    // Validar campos obrigatórios
-    let isValid = true;
-    const errors = [];
+function proceedToPayment() {
+    const customerName = document.getElementById('customerName').value;
+    const customerEmail = document.getElementById('customerEmail').value;
     
-    document.querySelectorAll('#dataFields input[required], #dataFields textarea[required]').forEach(input => {
-        if (!input.value.trim()) {
-            input.style.borderColor = '#FF6F61';
-            isValid = false;
-            const label = input.closest('.field-group').querySelector('.field-label').textContent;
-            errors.push(label.replace(' *', ''));
-        } else {
-            input.style.borderColor = '';
-        }
-    });
-    
-    if (!isValid) {
-        alert(`❌ Por favor, preencha os seguintes campos obrigatórios:\n\n${errors.join('\n')}`);
+    if (!customerName || !customerEmail) {
+        alert('Por favor, preencha todos os campos obrigatórios.');
         return;
     }
     
-    // Coletar dados
-    const formFields = {};
-    document.querySelectorAll('#dataFields input, #dataFields textarea').forEach(input => {
-        formFields[input.name] = input.value;
+    const formData = {};
+    selectedStyleData.fields.forEach(field => {
+        const input = document.getElementById(field.name);
+        if (input) {
+            formData[field.name] = input.value;
+            if (field.required && !input.value) {
+                alert(`Por favor, preencha o campo: ${field.label}`);
+                throw new Error('Campo obrigatório não preenchido');
+            }
+        }
     });
     
-    const customerName = document.getElementById('customerName')?.value || 'Cliente';
-    const customerEmail = document.getElementById('customerEmail')?.value || 'cliente@email.com';
-    const customerPhone = document.getElementById('customerPhone')?.value || '';
+    documentData = {
+        customerName,
+        customerEmail,
+        customerPhone: document.getElementById('customerPhone').value,
+        templateId: selectedStyle,
+        fields: formData
+    };
     
-    try {
-        showLoading('Criando preferência de pagamento...');
-        
-        // Criar pedido na API
-        const response = await fetch(`${API_URL}/api/create-payment`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                templateId: selectedStyle,
-                name: customerName,
-                email: customerEmail,
-                phone: customerPhone,
-                documentData: formFields
-            })
-        });
-        
-        hideLoading();
-        
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Erro ao criar documento');
-        }
-        
-        const data = await response.json();
-        currentDocumentId = data.documentId;
-        currentPaymentPreference = data.payment;
-        
-        console.log('✅ Documento criado:', data);
-        
-        // Atualizar informações de pagamento
-        updatePaymentInfo(data);
-        
-        // Avançar para pagamento
-        updateProgress(3);
-        document.getElementById('dataSection').style.display = 'none';
-        document.getElementById('paymentSection').style.display = 'block';
-        document.getElementById('paymentSection').scrollIntoView({ behavior: 'smooth' });
-        
-        // Atualizar nome do template no resumo
-        const templateNameEl = document.getElementById('orderTemplateName');
-        if (templateNameEl) {
-            templateNameEl.textContent = selectedStyleData.name;
-        }
-        
-    } catch (error) {
-        hideLoading();
-        console.error('❌ Erro ao criar documento:', error);
-        alert(`Erro ao criar documento:\n\n${error.message}`);
-    }
+    console.log('📝 Dados do documento:', documentData);
+    
+    updateProgress(3);
+    preparePayment();
+    
+    document.getElementById('dataSection').style.display = 'none';
+    document.getElementById('paymentSection').style.display = 'block';
+    document.getElementById('paymentSection').scrollIntoView({ behavior: 'smooth' });
 }
 
 function goBackToData() {
@@ -370,40 +320,62 @@ function goBackToData() {
     document.getElementById('dataSection').scrollIntoView({ behavior: 'smooth' });
 }
 
-/*==================== ATUALIZAR INFO DE PAGAMENTO ====================*/
-function updatePaymentInfo(paymentData) {
-    const priceElements = document.querySelectorAll('.payment-amount');
-    priceElements.forEach(el => {
-        el.textContent = `R$ ${(paymentData.estimatedPrice || 15).toFixed(2).replace('.', ',')}`;
-    });
-    
-    const priceNote = document.querySelector('.price-note');
-    if (priceNote && paymentData.priceNote) {
-        priceNote.textContent = paymentData.priceNote;
+/*==================== PREPARAR PAGAMENTO ====================*/
+async function preparePayment() {
+    try {
+        document.getElementById('orderTemplateName').textContent = selectedStyleData.name;
+        
+        const response = await fetch(`${API_URL}/api/create-document`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(documentData)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Erro na API (${response.status})`);
+        }
+        
+        const data = await response.json();
+        currentDocumentId = data.documentId;
+        
+        console.log('📄 Documento criado:', data.documentId);
+        
+        if (data.paymentPreference) {
+            currentPaymentPreference = data.paymentPreference;
+            console.log('💳 Preferência de pagamento criada');
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao preparar pagamento:', error);
+        showError('Erro ao preparar pagamento. Por favor, tente novamente.');
     }
 }
 
-/*==================== PAGAMENTO ====================*/
+/*==================== SETUP LISTENERS PAGAMENTO ====================*/
 function setupPaymentListeners() {
-    document.querySelectorAll('.payment-method').forEach(method => {
-        method.addEventListener('click', function() {
-            document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('active'));
-            this.classList.add('active');
-        });
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.payment-method')) {
+            document.querySelectorAll('.payment-method').forEach(method => {
+                method.classList.remove('selected');
+            });
+            e.target.closest('.payment-method').classList.add('selected');
+        }
     });
 }
 
+/*==================== PROCESSAR PAGAMENTO ====================*/
 async function processPayment() {
-    const btn = document.getElementById('btnProcessPayment');
-    if (!btn) return;
+    const selectedMethod = document.querySelector('.payment-method.selected');
     
-    const originalText = btn.innerHTML;
-    
-    const selectedMethod = document.querySelector('.payment-method.active');
     if (!selectedMethod) {
-        alert('Por favor, selecione um método de pagamento.');
+        alert('Por favor, selecione uma forma de pagamento.');
         return;
     }
+    
+    const btn = document.getElementById('btnProcessPayment');
+    const originalText = btn.innerHTML;
     
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
     btn.disabled = true;
@@ -631,6 +603,11 @@ function hideLoading() {
     if (overlay) {
         overlay.style.display = 'none';
     }
+}
+
+function showError(message) {
+    alert(`❌ ERRO\n\n${message}`);
+    console.error('showError:', message);
 }
 
 console.log('✅ Gerador.js com Mercado Pago carregado!');

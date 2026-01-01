@@ -24,6 +24,12 @@
             min-height: 100vh;
         }
         
+        /* Controle de visibilidade das seções */
+        #dataSection,
+        #paymentSection {
+            display: none;
+        }
+        
         .generator-hero {
             text-align: center;
             padding: 4rem 0 2rem;
@@ -184,11 +190,11 @@
         }
         
         .style-preview.preview-dourado {
-            background: linear-gradient(135deg, #b7950b 0%, #d4ac0d 100%);
+            background: linear-gradient(135deg, #d4af37 0%, #f4e5a1 100%);
         }
         
         .style-preview.preview-carta {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
         }
         
         .style-info {
@@ -197,51 +203,53 @@
         
         .style-info h4 {
             color: #002147;
+            font-family: 'Playfair Display', serif;
             margin-bottom: 0.5rem;
-            font-size: 1.1rem;
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
+            font-size: 1.3rem;
         }
         
         .style-info p {
             color: #6c757d;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
             font-family: 'Montserrat', sans-serif;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
         }
         
         .style-tags {
             display: flex;
-            flex-wrap: wrap;
             gap: 0.5rem;
+            flex-wrap: wrap;
         }
         
         .style-tag {
             background: #f8f9fa;
+            color: #002147;
             padding: 0.4rem 0.8rem;
-            border-radius: 15px;
-            font-size: 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
             font-weight: 500;
-            color: #6c757d;
             font-family: 'Montserrat', sans-serif;
         }
         
-        /* Customer Info */
+        .style-tag i {
+            margin-right: 5px;
+            color: #FF6F61;
+        }
+        
+        /* Formulários */
         .customer-info {
             background: #f8f9fa;
-            padding: 1.5rem;
-            border-radius: 8px;
+            padding: 2rem;
+            border-radius: 12px;
             margin-bottom: 2rem;
-            border-left: 4px solid #FF6F61;
         }
         
         .customer-info h4 {
             color: #002147;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             font-family: 'Montserrat', sans-serif;
         }
         
-        /* Form Fields */
         .field-group {
             margin-bottom: 1.5rem;
         }
@@ -273,73 +281,34 @@
         }
         
         .field-textarea {
+            min-height: 120px;
             resize: vertical;
-            min-height: 100px;
         }
         
-        /* Payment Methods */
-        .payment-methods {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin: 2rem 0;
-        }
-        
-        .payment-method {
-            border: 2px solid #dee2e6;
-            border-radius: 12px;
-            padding: 1.5rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .payment-method:hover {
-            border-color: #FF6F61;
-            box-shadow: 0 5px 15px rgba(255, 111, 97, 0.1);
-        }
-        
-        .payment-method.active {
-            border-color: #FF6F61;
-            background: rgba(255, 111, 97, 0.05);
-        }
-        
-        .payment-method i {
-            font-size: 2.5rem;
-            color: #002147;
-            margin-bottom: 1rem;
-        }
-        
-        .payment-method h4 {
-            color: #002147;
-            margin-bottom: 0.5rem;
-            font-family: 'Montserrat', sans-serif;
-        }
-        
-        .payment-method p {
-            color: #6c757d;
-            font-size: 0.9rem;
-            font-family: 'Montserrat', sans-serif;
-        }
-        
-        /* Buttons */
-        .btn-primary {
-            background: linear-gradient(135deg, #FF6F61 0%, #FF8F61 100%);
-            color: white;
-            padding: 1rem 2.5rem;
-            border-radius: 50px;
+        /* Botões */
+        .btn-primary,
+        .btn-secondary {
+            padding: 1rem 2rem;
             border: none;
-            font-size: 1.1rem;
+            border-radius: 8px;
+            font-size: 1rem;
             font-weight: 600;
             font-family: 'Montserrat', sans-serif;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(255, 111, 97, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #FF6F61 0%, #FF8577 100%);
+            color: white;
         }
         
         .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(255, 111, 97, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 111, 97, 0.3);
         }
         
         .btn-primary:disabled {
@@ -350,14 +319,7 @@
         .btn-secondary {
             background: white;
             color: #002147;
-            padding: 1rem 2rem;
-            border-radius: 50px;
             border: 2px solid #002147;
-            font-size: 1rem;
-            font-weight: 600;
-            font-family: 'Montserrat', sans-serif;
-            cursor: pointer;
-            transition: all 0.3s ease;
         }
         
         .btn-secondary:hover {
@@ -365,89 +327,101 @@
             color: white;
         }
         
-        /* Section Display */
+        /* Métodos de Pagamento */
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .payment-method {
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            padding: 2rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-method:hover {
+            border-color: #FF6F61;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 33, 71, 0.1);
+        }
+        
+        .payment-method.selected {
+            border-color: #FF6F61;
+            background: rgba(255, 111, 97, 0.05);
+        }
+        
+        .payment-method i {
+            font-size: 2.5rem;
+            color: #FF6F61;
+            margin-bottom: 1rem;
+        }
+        
+        .payment-method h4 {
+            color: #002147;
+            font-family: 'Montserrat', sans-serif;
+            margin-bottom: 0.5rem;
+        }
+        
+        .payment-method p {
+            color: #6c757d;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.9rem;
+        }
+        
+        /* Container e Section */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
         .section {
-            padding: 3rem 0;
+            padding: 4rem 0;
         }
         
-        #dataSection,
-        #paymentSection {
-            display: none;
+        .section__title {
+            font-family: 'Playfair Display', serif;
+            color: #002147;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
         }
         
-        /* Responsive */
-        @media (max-width: 768px) {
-            .generator-hero h1 {
-                font-size: 2rem;
-            }
-            
-            .styles-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .payment-methods {
-                grid-template-columns: 1fr;
-            }
-            
-            .progress-steps {
-                flex-direction: column;
-                gap: 1.5rem;
-            }
-            
-            .progress-steps::before {
-                display: none;
-            }
+        .section__description {
+            font-family: 'Montserrat', sans-serif;
+            color: #6c757d;
+            font-size: 1.1rem;
         }
     </style>
 </head>
-<body>
-    <!-- WhatsApp Float -->
-    <a href="https://wa.me/5511977135615?text=Olá!%20Tenho%20dúvidas%20sobre%20o%20gerador%20de%20documentos" 
-       class="whatsapp-float" 
-       target="_blank"
-       aria-label="WhatsApp">
-        <i class="fab fa-whatsapp"></i>
-    </a>
-
-    <!-- Header -->
-    <header class="header" id="header">
-        <nav class="nav container">
-            <div class="nav__logo">
-                <a href="index.html" style="color: inherit; text-decoration: none;">
-                    <span class="logo-name">Agnes Benites</span>
-                    <span class="logo-subtitle">Gerador de Documentos</span>
+<body class="generator-styles">
+    <!-- Header/Navbar -->
+    <header style="position: fixed; top: 0; left: 0; right: 0; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000;">
+        <div class="container">
+            <nav style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0;">
+                <div style="font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: #002147;">
+                    Agnes Benites
+                </div>
+                <a href="/" style="font-family: 'Montserrat', sans-serif; color: #002147; text-decoration: none; font-weight: 600;">
+                    <i class="fas fa-arrow-left"></i> Voltar ao Site
                 </a>
-            </div>
-            <div class="nav__menu" id="nav-menu">
-                <ul class="nav__list">
-                    <li class="nav__item">
-                        <a href="gerador.html" class="nav__link active-link">
-                            <i class="fas fa-file-alt"></i> Gerador
-                        </a>
-                    </li>
-                    <li class="nav__item">
-                        <a href="index.html" class="nav__link">
-                            <i class="fas fa-home"></i> Voltar ao Site
-                        </a>
-                    </li>
-                    <li class="nav__item">
-                        <a href="https://wa.me/5511977135615" target="_blank" class="nav__link">
-                            <i class="fab fa-whatsapp"></i> WhatsApp
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
+            </nav>
+        </div>
     </header>
 
-    <main class="generator-styles">
-        <!-- Hero -->
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
         <section class="generator-hero">
             <div class="container">
                 <div class="pricing-badge">
-                    <i class="fas fa-palette"></i> A partir de R$ 15/documento
+                    <i class="fas fa-sparkles"></i> A partir de R$ 15,00
                 </div>
-                <h1 class="hero__title" style="color: white; margin-bottom: 1rem; font-family: 'Playfair Display', serif;">
+                <h1 style="font-size: 3rem; font-weight: 700; margin-bottom: 1rem; font-family: 'Playfair Display', serif;">
                     Gerador de Documentos Jurídicos
                 </h1>
                 <p class="hero__text" style="max-width: 700px; margin: 0 auto 2rem; opacity: 0.9; font-family: 'Montserrat', sans-serif;">
@@ -484,10 +458,10 @@
         <section class="section styles-section" id="chooseStyleSection">
             <div class="container">
                 <div class="section__header" style="text-align: center; margin-bottom: 3rem;">
-                    <h2 class="section__title" style="font-family: 'Playfair Display', serif; color: #002147; font-size: 2.5rem; margin-bottom: 1rem;">
+                    <h2 class="section__title">
                         Passo 1: Escolha o Estilo do Documento
                     </h2>
-                    <p class="section__description" style="font-family: 'Montserrat', sans-serif; color: #6c757d; font-size: 1.1rem;">
+                    <p class="section__description">
                         Selecione o visual que melhor se adapta ao seu documento
                     </p>
                 </div>
@@ -508,10 +482,10 @@
         <section class="section" id="dataSection" style="background: white;">
             <div class="container">
                 <div class="section__header" style="text-align: center; margin-bottom: 3rem;">
-                    <h2 class="section__title" style="font-family: 'Playfair Display', serif; color: #002147; font-size: 2.5rem; margin-bottom: 1rem;">
+                    <h2 class="section__title">
                         Passo 2: Preencha os Dados
                     </h2>
-                    <p class="section__description" style="font-family: 'Montserrat', sans-serif; color: #6c757d; font-size: 1.1rem;">
+                    <p class="section__description">
                         Complete as informações necessárias para gerar seu documento
                     </p>
                 </div>
@@ -563,10 +537,10 @@
         <section class="section" id="paymentSection">
             <div class="container">
                 <div class="section__header" style="text-align: center; margin-bottom: 3rem;">
-                    <h2 class="section__title" style="font-family: 'Playfair Display', serif; color: #002147; font-size: 2.5rem; margin-bottom: 1rem;">
+                    <h2 class="section__title">
                         Passo 3: Pagamento
                     </h2>
-                    <p class="section__description" style="font-family: 'Montserrat', sans-serif; color: #6c757d; font-size: 1.1rem;">
+                    <p class="section__description">
                         Escolha a forma de pagamento e finalize
                     </p>
                 </div>
@@ -636,8 +610,7 @@
         </div>
     </footer>
 
-    <!-- Scripts -->
-    <script src="script.js"></script>
+    <!-- JavaScript -->
     <script src="gerador.js"></script>
 </body>
 </html>
