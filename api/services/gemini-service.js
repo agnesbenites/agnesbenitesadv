@@ -2,16 +2,15 @@ const fetch = require('node-fetch');
 
 class GeminiService {
     constructor() {
-        // Busca a chave exata do ambiente
+        // Usa a chave da GROQ que você configurou no Render/Cloudflare
         this.apiKey = process.env.GROQ_API_KEY;
         this.apiUrl = 'https://api.groq.com/openai/v1/chat/completions';
         this.model = 'llama-3.3-70b-versatile';
     }
 
     async callAI(messages, isJson = false) {
-        // Verifica se a chave existe antes de tentar a chamada
         if (!this.apiKey) {
-            throw new Error('❌ GROQ_API_KEY não encontrada no Render. Verifique as Environment Variables.');
+            throw new Error('❌ GROQ_API_KEY não configurada.');
         }
 
         const response = await fetch(this.apiUrl, {
@@ -22,8 +21,12 @@ class GeminiService {
             },
             body: JSON.stringify({
                 model: this.model,
-                messages: messages,
+                messages: [
+                    { role: "system", content: "Você é um assistente jurídico sênior da Dra. Agnes Benites (OAB/SP 541659). Suas respostas devem ser técnicas, precisas e em português do Brasil." },
+                    ...messages
+                ],
                 temperature: 0.1,
+                // Algumas versões da Groq exigem o formato JSON explícito
                 response_format: isJson ? { type: "json_object" } : null
             })
         });
@@ -31,29 +34,37 @@ class GeminiService {
         const data = await response.json();
         if (!response.ok) throw new Error(`Groq Error: ${data.error?.message}`);
         
-        return data.choices[0].message.content;
+        let content = data.choices[0].message.content;
+        
+        // Limpeza de Markdown (essencial para não quebrar o JSON)
+        if (isJson) {
+            content = content.replace(/```json/g, '').replace(/```/g, '').trim();
+        }
+        
+        return content;
     }
 
-    // Função que a rota está pedindo
     async analyzeDocument(documentText) {
-        const prompt = `Analise o contrato e retorne um JSON com: tipo, objeto, resumo, partes (contratante, contratado), clausulas_identificadas (array), clausulas_problematicas (array), pontos_atencao (array). DOCUMENTO: ${documentText.substring(0, 15000)}`;
+        const prompt = `Analise este documento para a Dra. Agnes Benites (OAB/SP 541659). Extraia: tipo, objeto, resumo e partes. 
+        Retorne APENAS um JSON válido. DOCUMENTO: ${documentText.substring(0, 12000)}`;
+
         const res = await this.callAI([{ role: 'user', content: prompt }], true);
-        return { success: true, analysis: JSON.parse(res) };
+        try {
+            return { success: true, analysis: JSON.parse(res) };
+        } catch (e) {
+            throw new Error("Erro ao processar análise da Groq.");
+        }
     }
 
-    // Função que a rota está pedindo (Corrigindo o nome para sugestões)
     async suggestChanges(documentText, userRequest) {
-        const prompt = `Com base no contrato: ${documentText}\n\nO usuário quer: ${userRequest}\n\nRetorne um JSON com: "sugestoes" (array de tipo, clausula_original, clausula_sugerida, justificativa, impacto, prioridade).`;
+        const prompt = `Sugira alterações jurídicas para a Dra. Agnes Benites (OAB/SP 541659). 
+        Contrato: ${documentText.substring(0, 8000)}
+        Pedido: ${userRequest}
+        Retorne um JSON com o campo "sugestoes" (array com clausula_original e clausula_sugerida).`;
+
         const res = await this.callAI([{ role: 'user', content: prompt }], true);
         return { success: true, suggestions: JSON.parse(res) };
     }
-
-    async answerChat(documentText, message) {
-        const prompt = `Contexto: ${documentText}\n\nPergunta: ${message}`;
-        const res = await this.callAI([{ role: 'user', content: prompt }], false);
-        return { success: true, response: res };
-    }
 }
 
-const getGeminiService = () => new GeminiService();
-module.exports = { getGeminiService };
+module.exports = new GeminiService();

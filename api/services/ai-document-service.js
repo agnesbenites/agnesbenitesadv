@@ -1,318 +1,105 @@
 /**
- * Serviço de IA para Análise de Documentos
- * Usa a API da Anthropic (Claude) para:
- * - Analisar documentos jurídicos
- * - Sugerir alterações de cláusulas
- * - Gerar redações alternativas
+ * Agente Jurídico Inteligente - Dra. Agnes Benites (OAB/SP 541659)
+ * Motor: Groq (Llama 3.3 70B)
  */
 
-const Anthropic = require('@anthropic-ai/sdk');
+const fetch = require('node-fetch');
 
-// Inicializar cliente Anthropic
-const anthropic = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY
-});
-
-/**
- * Analisar documento e extrair informações
- * @param {string} documentText - Texto do documento
- * @returns {Promise<Object>} - Análise estruturada
- */
-async function analyzeDocument(documentText) {
-    try {
-        console.log('🤖 Analisando documento com IA...');
-        
-        const message = await anthropic.messages.create({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 4000,
-            messages: [{
-                role: 'user',
-                content: `Analise este documento jurídico e extraia as seguintes informações em formato JSON:
-
-Documento:
-${documentText}
-
-Retorne APENAS um objeto JSON (sem markdown) com:
-{
-  "tipo": "contrato/proposta/procuracao/etc",
-  "partes": ["nome das partes envolvidas"],
-  "objeto": "objeto do documento",
-  "valor": "valor mencionado ou null",
-  "prazo": "prazo de vigência ou null",
-  "clausulas_principais": [
-    {
-      "titulo": "Nome da cláusula",
-      "conteudo": "Texto da cláusula",
-      "tipo": "obrigacao/penalidade/pagamento/prazo/etc"
+class AgnesAI {
+    constructor() {
+        this.apiKey = process.env.GROQ_API_KEY;
+        this.apiUrl = 'https://api.groq.com/openai/v1/chat/completions';
+        this.model = 'llama-3.3-70b-versatile';
     }
-  ],
-  "pontos_atencao": ["pontos que merecem atenção"],
-  "campos_extraidos": {
-    "chave": "valor"
-  }
-}`
-            }]
+
+    async callGroq(messages, isJson = false) {
+        const response = await fetch(this.apiUrl, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${this.apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: this.model,
+                messages: [
+                    { 
+                        role: "system", 
+                        content: `Você é o sistema oficial da Dra. Agnes Benites (OAB/SP 541659). 
+                        Sua missão é analisar documentos, sugerir melhorias protetivas e redigir cláusulas.
+                        Sempre use linguagem jurídica formal, mas clara.` 
+                    },
+                    ...messages
+                ],
+                temperature: 0.2,
+                response_format: isJson ? { type: "json_object" } : null
+            })
         });
+
+        const data = await response.json();
+        let content = data.choices[0].message.content;
+        if (isJson) content = content.replace(/```json/g, '').replace(/```/g, '').trim();
+        return content;
+    }
+
+    /**
+     * PASSO 1: ANÁLISE AUTOMÁTICA (Assim que o documento sobe)
+     */
+    async analyzeDocument(documentText) {
+        console.log('🔍 Iniciando análise automática para Dra. Agnes...');
+        const prompt = `Analise este documento e forneça um diagnóstico jurídico completo em JSON:
+        Texto: ${documentText.substring(0, 15000)}
         
-        const responseText = message.content[0].text;
+        Campos obrigatórios: tipo, partes, objeto, valor, pontos_risco (array), resumo_executivo.`;
+
+        const res = await this.callGroq([{ role: 'user', content: prompt }], true);
+        return { success: true, analysis: JSON.parse(res) };
+    }
+
+    /**
+     * PASSO 2: MELHORIA OU GERAÇÃO (Baseado na intenção do usuário)
+     * Este comando trata "Quero melhorar este documento" ou "Gere um parecido"
+     */
+    async processUserIntent(documentText, intent) {
+        console.log(`💡 Processando intenção: ${intent}`);
         
-        // Remover markdown se houver
-        const jsonText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        const prompt = `
+        DOCUMENTO BASE: ${documentText.substring(0, 10000)}
+        PEDIDO DO CLIENTE: "${intent}"
         
-        const analysis = JSON.parse(jsonText);
+        INSTRUÇÃO: 
+        1. Se o pedido for MELHORAR: Reescreva as cláusulas fracas tornando-as mais seguras para o cliente da Dra. Agnes.
+        2. Se o pedido for GERAR PARECIDO: Crie uma nova estrutura baseada neste modelo, mas pronta para preenchimento.
         
-        console.log('✅ Documento analisado com sucesso');
+        Retorne um JSON com:
+        {
+            "texto_gerado": "O novo texto completo do documento",
+            "alteracoes_feitas": ["lista de melhorias implementadas"],
+            "oab_responsavel": "541659/SP"
+        }`;
+
+        const res = await this.callGroq([{ role: 'user', content: prompt }], true);
+        return { success: true, result: JSON.parse(res) };
+    }
+
+    /**
+     * REDAÇÃO DE CLÁUSULA ESPECÍFICA
+     */
+    async rewriteClause(originalClause, changeIntent) {
+        const prompt = `Reescreva a cláusula abaixo para atender ao objetivo: ${changeIntent}.
+        Cláusula: ${originalClause}
+        Retorne JSON: {"texto": "nova cláusula", "justificativa": "por que mudou"}`;
         
-        return {
-            success: true,
-            analysis
-        };
-        
-    } catch (error) {
-        console.error('❌ Erro ao analisar documento:', error);
-        throw new Error(`Erro na análise: ${error.message}`);
+        const res = await this.callGroq([{ role: 'user', content: prompt }], true);
+        return { success: true, rewrites: JSON.parse(res) };
     }
 }
 
-/**
- * Sugerir alterações/melhorias para o documento
- * @param {Object} documentAnalysis - Análise do documento
- * @param {string} userIntent - Intenção do usuário (ex: "isentar cliente de multa")
- * @returns {Promise<Object>} - Sugestões de alterações
- */
-async function suggestChanges(documentAnalysis, userIntent = null) {
-    try {
-        console.log('💡 Gerando sugestões de alterações...');
-        
-        let prompt = `Baseado nesta análise de documento jurídico, sugira melhorias e alterações:
+const agnesAI = new AgnesAI();
 
-Análise:
-${JSON.stringify(documentAnalysis, null, 2)}`;
-
-        if (userIntent) {
-            prompt += `\n\nIntenção do usuário: "${userIntent}"
-Foque em sugestões que atendam essa intenção.`;
-        }
-        
-        prompt += `\n\nRetorne APENAS um objeto JSON (sem markdown) com:
-{
-  "sugestoes": [
-    {
-      "tipo": "adicao/remocao/alteracao",
-      "clausula_original": "texto atual ou null se for adição",
-      "clausula_sugerida": "texto sugerido",
-      "justificativa": "por que fazer essa mudança",
-      "impacto": "proteção/flexibilidade/clareza/etc",
-      "prioridade": "alta/media/baixa"
-    }
-  ],
-  "clausulas_problematicas": [
-    {
-      "clausula": "texto",
-      "problema": "descrição do problema",
-      "risco": "alto/medio/baixo"
-    }
-  ],
-  "clausulas_faltantes": [
-    {
-      "titulo": "Nome da cláusula",
-      "conteudo_sugerido": "texto sugerido",
-      "importancia": "essencial/recomendada/opcional"
-    }
-  ]
-}`;
-
-        const message = await anthropic.messages.create({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 6000,
-            messages: [{
-                role: 'user',
-                content: prompt
-            }]
-        });
-        
-        const responseText = message.content[0].text;
-        const jsonText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-        
-        const suggestions = JSON.parse(jsonText);
-        
-        console.log(`✅ ${suggestions.sugestoes?.length || 0} sugestões geradas`);
-        
-        return {
-            success: true,
-            suggestions
-        };
-        
-    } catch (error) {
-        console.error('❌ Erro ao gerar sugestões:', error);
-        throw new Error(`Erro ao sugerir alterações: ${error.message}`);
-    }
-}
-
-/**
- * Gerar redação alternativa para uma cláusula específica
- * @param {string} originalClause - Cláusula original
- * @param {string} changeIntent - O que deve ser alterado (ex: "remover multa")
- * @param {string} documentContext - Contexto do documento
- * @returns {Promise<Object>} - Redações alternativas
- */
-async function rewriteClause(originalClause, changeIntent, documentContext = '') {
-    try {
-        console.log('✍️ Gerando redação alternativa...');
-        
-        const prompt = `Você é um advogado especialista em redação de cláusulas contratuais.
-
-Cláusula Original:
-${originalClause}
-
-Alteração Solicitada:
-${changeIntent}
-
-${documentContext ? `Contexto do Documento:\n${documentContext}\n` : ''}
-
-Gere 3 versões alternativas dessa cláusula, adaptadas para a alteração solicitada.
-
-Retorne APENAS um objeto JSON (sem markdown) com:
-{
-  "versoes": [
-    {
-      "titulo": "Versão 1 - [estilo]",
-      "texto": "redação completa da cláusula",
-      "tom": "formal/moderado/simples",
-      "explicacao": "o que foi alterado e por quê"
-    }
-  ],
-  "recomendacao": "qual versão é mais recomendada e por quê"
-}`;
-
-        const message = await anthropic.messages.create({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 4000,
-            messages: [{
-                role: 'user',
-                content: prompt
-            }]
-        });
-        
-        const responseText = message.content[0].text;
-        const jsonText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-        
-        const rewrites = JSON.parse(jsonText);
-        
-        console.log(`✅ ${rewrites.versoes?.length || 0} versões geradas`);
-        
-        return {
-            success: true,
-            rewrites
-        };
-        
-    } catch (error) {
-        console.error('❌ Erro ao reescrever cláusula:', error);
-        throw new Error(`Erro ao gerar redação: ${error.message}`);
-    }
-}
-
-/**
- * Aplicar alterações ao documento
- * @param {string} originalText - Texto original do documento
- * @param {Array} changes - Lista de alterações a aplicar
- * @returns {Promise<string>} - Documento modificado
- */
-async function applyChangesToDocument(originalText, changes) {
-    try {
-        console.log('📝 Aplicando alterações ao documento...');
-        
-        const prompt = `Você é um advogado especialista. Aplique as seguintes alterações ao documento:
-
-Documento Original:
-${originalText}
-
-Alterações a Aplicar:
-${JSON.stringify(changes, null, 2)}
-
-Retorne o documento completo modificado, mantendo a formatação profissional.
-NÃO adicione comentários, apenas retorne o texto do documento modificado.`;
-
-        const message = await anthropic.messages.create({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 8000,
-            messages: [{
-                role: 'user',
-                content: prompt
-            }]
-        });
-        
-        const modifiedDocument = message.content[0].text;
-        
-        console.log('✅ Alterações aplicadas com sucesso');
-        
-        return {
-            success: true,
-            modifiedDocument
-        };
-        
-    } catch (error) {
-        console.error('❌ Erro ao aplicar alterações:', error);
-        throw new Error(`Erro ao modificar documento: ${error.message}`);
-    }
-}
-
-/**
- * Gerar cláusula específica do zero
- * @param {string} clauseType - Tipo de cláusula (ex: "isenção de multa")
- * @param {Object} context - Contexto relevante
- * @returns {Promise<Object>} - Cláusula gerada
- */
-async function generateClause(clauseType, context = {}) {
-    try {
-        console.log(`📜 Gerando cláusula: ${clauseType}...`);
-        
-        const prompt = `Gere uma cláusula jurídica profissional do tipo: "${clauseType}"
-
-Contexto:
-${JSON.stringify(context, null, 2)}
-
-Retorne APENAS um objeto JSON (sem markdown) com:
-{
-  "clausula": {
-    "titulo": "CLÁUSULA X - [TÍTULO]",
-    "texto": "texto completo da cláusula",
-    "variantes": ["variante 1", "variante 2"],
-    "observacoes": "pontos importantes sobre o uso desta cláusula"
-  }
-}`;
-
-        const message = await anthropic.messages.create({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 3000,
-            messages: [{
-                role: 'user',
-                content: prompt
-            }]
-        });
-        
-        const responseText = message.content[0].text;
-        const jsonText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-        
-        const clauseData = JSON.parse(jsonText);
-        
-        console.log('✅ Cláusula gerada com sucesso');
-        
-        return {
-            success: true,
-            clause: clauseData.clausula
-        };
-        
-    } catch (error) {
-        console.error('❌ Erro ao gerar cláusula:', error);
-        throw new Error(`Erro ao gerar cláusula: ${error.message}`);
-    }
-}
-
+// Exportações para manter compatibilidade com suas rotas
 module.exports = {
-    analyzeDocument,
-    suggestChanges,
-    rewriteClause,
-    applyChangesToDocument,
-    generateClause
+    analyzeDocument: (text) => agnesAI.analyzeDocument(text),
+    suggestChanges: (analysis, intent) => agnesAI.processUserIntent(JSON.stringify(analysis), intent),
+    rewriteClause: (clause, intent) => agnesAI.rewriteClause(clause, intent),
+    applyChangesToDocument: (text, intent) => agnesAI.processUserIntent(text, intent)
 };

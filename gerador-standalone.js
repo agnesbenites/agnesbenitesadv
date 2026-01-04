@@ -1,5 +1,4 @@
-/*==================== CONFIGURAÇÃO ====================*/
-// Templates embutidos localmente (não precisa de servidor)
+/*==================== CONFIGURAÇÃO E TEMPLATES LOCAIS ====================*/
 const TEMPLATES_LOCAL = [
     {
         templateId: 'contrato-moderno',
@@ -55,30 +54,95 @@ const TEMPLATES_LOCAL = [
     }
 ];
 
-/*==================== VARIÁVEIS GLOBAIS ====================*/
+/*==================== VARIÁVEIS GLOBAIS E IA ====================*/
 let selectedStyle = null;
 let selectedStyleData = null;
-let availableTemplates = TEMPLATES_LOCAL; // Usar templates locais
+let currentDocumentText = ""; 
+const API_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:3000/api' 
+    : 'https://gerador-documentos-juridicos.onrender.com/api'; // Sua URL do Render
 
 /*==================== INICIALIZAÇÃO ====================*/
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🚀 Gerador de Documentos iniciado (modo local)');
-    
-    // Renderizar templates locais
+document.addEventListener('DOMContentLoaded', () => {
     renderTemplateCards();
-    
-    // Iniciar no passo 1
     updateProgress(1);
+    
+    // Configura listener de upload de arquivo para IA se o campo existir
+    const fileInput = document.getElementById('fileInputAI');
+    if(fileInput) {
+        fileInput.addEventListener('change', (e) => handleAIFileUpload(e.target.files[0]));
+    }
 });
 
-/*==================== RENDERIZAR CARDS DE TEMPLATES ====================*/
+/*==================== FUNÇÕES DA IA (NOVO) ====================*/
+async function handleAIFileUpload(file) {
+    if (!file) return;
+    showLoading("Dra. Agnes (IA) analisando documento...");
+    
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        const response = await fetch(`${API_URL}/upload-and-analyze`, { method: 'POST', body: formData });
+        const data = await response.json();
+        if (data.success) {
+            currentDocumentText = data.fullText;
+            displayAIAnalysis(data.analysis);
+            document.getElementById('aiCommandsSection').style.display = 'block';
+        }
+    } catch (e) {
+        alert("Erro na conexão com o servidor de IA.");
+    } finally {
+        hideLoading();
+    }
+}
+
+async function runAICommand(intentType) {
+    if (!currentDocumentText) return alert("Suba um documento para a IA primeiro.");
+    
+    const intent = intentType === 'improve' 
+        ? "Melhore este documento com foco em proteção jurídica." 
+        : "Gere um novo documento baseado neste modelo.";
+
+    showLoading("Groq AI processando pedido...");
+
+    try {
+        const response = await fetch(`${API_URL}/process-intent`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: currentDocumentText, intent: intent })
+        });
+        const data = await response.json();
+        if (data.success) {
+            // Abre uma área de texto ou preenche um campo com o resultado
+            alert("Documento processado pela IA com sucesso! Verifique o console.");
+            console.log("Resultado IA:", data.result.texto_gerado);
+        }
+    } catch (e) {
+        alert("Erro ao processar comando da IA.");
+    } finally {
+        hideLoading();
+    }
+}
+
+function displayAIAnalysis(analysis) {
+    const resultDiv = document.getElementById('analysisResult');
+    if(!resultDiv) return;
+    resultDiv.innerHTML = `
+        <div style="background:#f0f4f8; padding:15px; border-radius:8px; border-left:4px solid #002147;">
+            <h4><i class="fas fa-robot"></i> Análise OAB/SP 541659</h4>
+            <p><strong>Tipo:</strong> ${analysis.tipo}</p>
+            <p><strong>Risco Detectado:</strong> ${analysis.pontos_atencao.join(', ')}</p>
+        </div>
+    `;
+}
+
+/*==================== RENDERIZAR CARDS (LOCAL) ====================*/
 function renderTemplateCards() {
     const stylesGrid = document.querySelector('.styles-grid');
     if (!stylesGrid) return;
-    
     stylesGrid.innerHTML = '';
-    
-    availableTemplates.forEach(template => {
+    TEMPLATES_LOCAL.forEach(template => {
         const card = createTemplateCard(template);
         stylesGrid.appendChild(card);
     });
@@ -88,237 +152,99 @@ function createTemplateCard(template) {
     const card = document.createElement('div');
     card.className = 'style-card';
     card.dataset.style = template.templateId;
-    
-    let previewClass = 'preview-moderno';
-    if (template.templateId.includes('proposta')) previewClass = 'preview-proposta';
-    else if (template.templateId.includes('carta')) previewClass = 'preview-carta';
+    let previewClass = template.templateId.includes('proposta') ? 'preview-proposta' : 
+                      (template.templateId.includes('carta') ? 'preview-carta' : 'preview-moderno');
     
     card.innerHTML = `
         <div class="style-preview ${previewClass}">
-            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white;">
-                <i class="fas fa-file-contract" style="font-size: 3rem; opacity: 0.3;"></i>
-            </div>
+            <i class="fas fa-file-contract" style="font-size: 2rem; color: rgba(255,255,255,0.5);"></i>
         </div>
         <div class="style-info">
             <h4>${template.name}</h4>
             <p>${template.description}</p>
             <div class="style-tags">
-                <span class="style-tag"><i class="fas fa-tag"></i> ${template.category}</span>
-                <span class="style-tag"><i class="fas fa-money-bill-wave"></i> R$ ${template.price.toFixed(2)}</span>
+                <span class="style-tag">R$ ${template.price.toFixed(2)}</span>
             </div>
         </div>
     `;
-    
     card.addEventListener('click', () => selectStyle(template.templateId, template));
-    
     return card;
 }
 
-/*==================== SELEÇÃO DE ESTILO ====================*/
+/*==================== LÓGICA DE NAVEGAÇÃO ====================*/
 function selectStyle(styleId, templateData) {
     selectedStyle = styleId;
     selectedStyleData = templateData;
-    
-    console.log('🎨 Estilo selecionado:', styleId, templateData);
-    
-    document.querySelectorAll('.style-card').forEach(card => {
-        card.classList.remove('selected');
-    });
-    
+    document.querySelectorAll('.style-card').forEach(c => c.classList.remove('selected'));
     document.querySelector(`[data-style="${styleId}"]`).classList.add('selected');
-    
-    const btnContinue = document.getElementById('btnSelectStyle');
-    if (btnContinue) {
-        btnContinue.disabled = false;
-        btnContinue.style.opacity = '1';
-    }
+    const btn = document.getElementById('btnSelectStyle');
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
 }
 
-/*==================== PROSSEGUIR PARA DADOS ====================*/
 function proceedToData() {
-    if (!selectedStyle) {
-        alert('Por favor, selecione um estilo de documento.');
-        return;
-    }
-    
+    if (!selectedStyle) return alert('Selecione um estilo.');
     updateProgress(2);
     generateDataFields();
-    
     document.getElementById('chooseStyleSection').style.display = 'none';
     document.getElementById('dataSection').style.display = 'block';
-    document.getElementById('dataSection').scrollIntoView({ behavior: 'smooth' });
 }
 
-function goBackToStyle() {
-    updateProgress(1);
-    document.getElementById('dataSection').style.display = 'none';
-    document.getElementById('chooseStyleSection').style.display = 'block';
-    document.getElementById('chooseStyleSection').scrollIntoView({ behavior: 'smooth' });
-}
-
-/*==================== GERAR CAMPOS DINAMICAMENTE ====================*/
 function generateDataFields() {
     const dataFields = document.getElementById('dataFields');
-    if (!dataFields) return;
-    
+    if (!dataFields || !selectedStyleData) return;
     dataFields.innerHTML = '';
-    
-    if (!selectedStyleData || !selectedStyleData.fields) {
-        console.error('Nenhum campo definido para este template');
-        return;
-    }
-    
     selectedStyleData.fields.forEach(field => {
-        const fieldGroup = document.createElement('div');
-        fieldGroup.className = 'field-group';
+        const group = document.createElement('div');
+        group.className = 'field-group';
+        group.innerHTML = `<label class="field-label">${field.label} ${field.required ? '<span style="color:red">*</span>':''}</label>`;
         
-        const label = document.createElement('label');
-        label.className = 'field-label';
-        label.textContent = field.label;
-        if (field.required) {
-            label.innerHTML += ' <span style="color: #FF6F61;">*</span>';
-        }
-        
-        let input;
-        
-        if (field.type === 'textarea') {
-            input = document.createElement('textarea');
-            input.className = 'field-textarea';
-        } else {
-            input = document.createElement('input');
-            input.className = 'field-input';
-            input.type = field.type || 'text';
-        }
-        
+        const input = field.type === 'textarea' ? document.createElement('textarea') : document.createElement('input');
+        input.className = field.type === 'textarea' ? 'field-textarea' : 'field-input';
+        if(field.type !== 'textarea') input.type = field.type === 'currency' ? 'text' : (field.type || 'text');
         input.id = field.name;
         input.placeholder = field.placeholder || '';
-        if (field.required) {
-            input.required = true;
-        }
+        if(field.type === 'currency') input.addEventListener('input', (e) => formatCurrency(e.target));
         
-        // Formatação para campos especiais
-        if (field.type === 'currency') {
-            input.type = 'text';
-            input.addEventListener('input', (e) => formatCurrency(e.target));
-        }
-        
-        fieldGroup.appendChild(label);
-        fieldGroup.appendChild(input);
-        dataFields.appendChild(fieldGroup);
+        group.appendChild(input);
+        dataFields.appendChild(group);
     });
 }
 
-/*==================== PROSSEGUIR PARA PAGAMENTO ====================*/
 function proceedToPayment() {
-    const customerName = document.getElementById('customerName').value;
-    const customerEmail = document.getElementById('customerEmail').value;
-    
-    if (!customerName || !customerEmail) {
-        alert('Por favor, preencha todos os campos obrigatórios (Nome e E-mail).');
-        return;
-    }
-    
-    const formData = {};
-    let hasError = false;
-    
-    selectedStyleData.fields.forEach(field => {
-        const input = document.getElementById(field.name);
-        if (input) {
-            formData[field.name] = input.value;
-            if (field.required && !input.value) {
-                alert(`Por favor, preencha o campo: ${field.label}`);
-                hasError = true;
-            }
-        }
-    });
-    
-    if (hasError) return;
-    
-    console.log('📝 Dados coletados:', formData);
-    
-    // Atualizar resumo do pedido
-    document.getElementById('orderTemplateName').textContent = selectedStyleData.name;
-    document.querySelector('.payment-amount').textContent = `R$ ${selectedStyleData.price.toFixed(2)}`;
-    
     updateProgress(3);
-    
     document.getElementById('dataSection').style.display = 'none';
     document.getElementById('paymentSection').style.display = 'block';
-    document.getElementById('paymentSection').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('orderTemplateName').textContent = selectedStyleData.name;
+    document.querySelector('.payment-amount').textContent = `R$ ${selectedStyleData.price.toFixed(2)}`;
 }
 
-function goBackToData() {
-    updateProgress(2);
-    document.getElementById('paymentSection').style.display = 'none';
-    document.getElementById('dataSection').style.display = 'block';
-    document.getElementById('dataSection').scrollIntoView({ behavior: 'smooth' });
-}
-
-/*==================== PROCESSAR PAGAMENTO (MODO DEMO) ====================*/
-async function processPayment() {
-    const btn = document.getElementById('btnProcessPayment');
-    const originalText = btn.innerHTML;
-    
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
-    btn.disabled = true;
-    
-    // Simular processamento
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Modo DEMO - gerar documento direto
-    alert('🎉 MODO DEMONSTRAÇÃO\n\nEm produção, aqui seria aberto o checkout do Mercado Pago.\n\nVou gerar o documento de demonstração para você!');
-    
-    generateDemoDocument();
-}
-
-function generateDemoDocument() {
-    const btn = document.getElementById('btnProcessPayment');
-    
-    btn.innerHTML = '<i class="fas fa-check-circle"></i> Documento Gerado!';
-    btn.style.background = '#27ae60';
-    
-    updateProgress(4);
-    
-    setTimeout(() => {
-        alert(
-            `✅ Documento gerado com sucesso!\n\n` +
-            `Template: ${selectedStyleData.name}\n` +
-            `Preço: R$ ${selectedStyleData.price.toFixed(2)}\n\n` +
-            `OBSERVAÇÃO: Este é um gerador de demonstração.\n` +
-            `Para gerar PDFs reais, conecte ao servidor backend.`
-        );
-    }, 500);
-}
-
-/*==================== FUNÇÕES AUXILIARES ====================*/
+/*==================== UTILITÁRIOS ====================*/
 function updateProgress(step) {
     const steps = document.querySelectorAll('.step-circle');
-    const labels = document.querySelectorAll('.step-label');
-    
-    steps.forEach((circle, index) => {
-        circle.classList.remove('active', 'completed');
-        labels[index].classList.remove('active');
-        
-        if (index + 1 < step) {
-            circle.classList.add('completed');
-        } else if (index + 1 === step) {
-            circle.classList.add('active');
-            labels[index].classList.add('active');
-        }
+    steps.forEach((c, i) => {
+        c.classList.remove('active', 'completed');
+        if (i + 1 < step) c.classList.add('completed');
+        else if (i + 1 === step) c.classList.add('active');
     });
 }
 
 function formatCurrency(input) {
     let value = input.value.replace(/\D/g, '');
-    if (value === '') {
-        input.value = '';
-        return;
-    }
-    value = (parseInt(value) / 100).toLocaleString('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    });
-    input.value = value;
+    if (!value) return input.value = '';
+    input.value = (parseInt(value) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-console.log('✅ Gerador.js (modo local) carregado!');
+function showLoading(msg) {
+    const loader = document.getElementById('loadingOverlay');
+    if(loader) {
+        document.getElementById('loadingText').textContent = msg;
+        loader.style.display = 'flex';
+    }
+}
+
+function hideLoading() {
+    const loader = document.getElementById('loadingOverlay');
+    if(loader) loader.style.display = 'none';
+}
+
+console.log('✅ Gerador Unificado (Templates + IA Agnes) Iniciado!');
