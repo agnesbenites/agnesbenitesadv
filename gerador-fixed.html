@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador | Agnes Benites</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        .app-container { max-width: 700px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { background: #002147; color: white; padding: 25px; text-align: center; }
+        .content { padding: 30px; }
+        .step { display: none; }
+        .step.active { display: block; }
+        
+        .doc-option { 
+            border: 2px solid #eee; padding: 20px; border-radius: 10px; margin-bottom: 15px; 
+            cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 15px;
+        }
+        .doc-option:hover { border-color: #c5a059; background: #fffcf5; }
+        .doc-option i { font-size: 1.5rem; color: #002147; }
+
+        input, textarea, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        label { font-weight: 600; font-size: 0.9rem; color: #555; }
+        
+        .btn { background: #ff7f50; color: white; border: none; padding: 15px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-pix { background: #28a745; }
+        
+        .info-oab { font-size: 0.8rem; text-align: center; margin-top: 20px; color: #999; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <h2 style="margin:0">Gerador Profissional</h2>
+        <small>Registro Profissional: OAB/SP 541659</small>
+    </div>
+
+    <div class="content">
+        <div id="step1" class="step active">
+            <h3>Escolha o modelo:</h3>
+            <div class="doc-option" onclick="nextStep(2, 'contrato-moderno')">
+                <i class="fas fa-file-contract"></i>
+                <div><strong>Contrato Moderno</strong><br><small>Layout azul (api/templates/contrato-moderno.js)</small></div>
+            </div>
+            <div class="doc-option" onclick="nextStep(2, 'proposta-verde')">
+                <i class="fas fa-file-invoice"></i>
+                <div><strong>Proposta Verde</strong><br><small>Layout institucional (api/templates/proposta-verde.js)</small></div>
+            </div>
+        </div>
+
+        <div id="step2" class="step">
+            <h3>Dados do Documento</h3>
+            <div id="dynamicFields">
+                <label>Nome do Contratante</label>
+                <input type="text" id="contratante" placeholder="Nome Completo">
+                
+                <label>CPF/CNPJ</label>
+                <input type="text" id="documento" placeholder="000.000.000-00">
+                
+                <label>Objeto / Descrição</label>
+                <textarea id="objeto" rows="4" placeholder="Descreva os termos..."></textarea>
+            </div>
+            <button class="btn" onclick="nextStep(3)">Próximo Passo</button>
+        </div>
+
+        <div id="step3" class="step">
+            <div style="text-align:center">
+                <i class="fas fa-qrcode fa-4x" style="color:#002147"></i>
+                <h3>Pagamento via PIX</h3>
+                <p>Para gerar o PDF assinado pela Dra. Agnes Benites (OAB/SP 541659), realize o pagamento:</p>
+                <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin:20px 0;">
+                    <strong>Chave PIX:</strong><br>
+                    agnesbenites@gmail.com
+                </div>
+                <p>Valor: <strong>R$ 15,00</strong></p>
+                <button class="btn btn-pix" onclick="generatePDF()">Confirmar Pagamento e Baixar</button>
+            </div>
+        </div>
+    </div>
+    <div class="info-oab">Documento validado por Agnes Benites - OAB/SP 541659</div>
+</div>
+
+<script>
+    let selectedTemplate = '';
+
+    function nextStep(step, template = null) {
+        if(template) selectedTemplate = template;
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        document.getElementById('step' + step).classList.add('active');
+    }
+
+    async function generatePDF() {
+        const data = {
+            template: selectedTemplate,
+            oab: "541659/SP",
+            contratante: document.getElementById('contratante').value,
+            documento: document.getElementById('documento').value,
+            objeto: document.getElementById('objeto').value
+        };
+
+        // Alerta de simulação para conexão com seu backend Node.js
+        alert("Enviando dados para o template em: api/templates/" + selectedTemplate + ".js\n\nResponsável: OAB/SP 541659");
+        
+        // Aqui o código enviaria o 'data' via POST para sua rota de API
+        console.log("Payload para o Backend:", data);
+    }
+</script>
+
+</body>
+</html>
