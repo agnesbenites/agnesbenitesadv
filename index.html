@@ -18,14 +18,19 @@
         /* Seção de Conteúdos Autorais */
         .content-section { padding: 80px 0; background: white; }
         .content-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 40px; }
-        .content-card { border: 1px solid #eee; border-radius: 12px; padding: 25px; transition: 0.3s; background: #fff; }
+        .content-card { border: 1px solid #eee; border-radius: 12px; padding: 25px; transition: 0.3s; background: #fff; display: flex; flex-direction: column; }
         .content-card:hover { border-color: var(--gold); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
         .content-card h4 { color: var(--primary); margin-bottom: 10px; border-bottom: 2px solid var(--gold); display: inline-block; }
-        .file-link { display: flex; align-items: center; gap: 10px; color: #555; text-decoration: none; margin-top: 10px; font-weight: 600; }
-        .file-link:hover { color: var(--coral); }
-        .file-link i { color: #d9534f; }
         
-        .tag-autor { font-size: 0.7rem; background: var(--bg-light); padding: 2px 8px; border-radius: 4px; color: var(--primary); font-weight: bold; }
+        .file-link { display: flex; align-items: center; gap: 10px; color: #555; text-decoration: none; margin-top: 10px; font-weight: 600; font-size: 0.9rem; }
+        .file-link:hover { color: var(--coral); }
+        .file-link i { color: var(--gold); }
+        
+        .tag-status { font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
+        .tag-view { background: #e3f2fd; color: #1976d2; }
+        .tag-buy { background: #fff3e0; color: #e65100; }
+
+        .price-label { color: var(--coral); font-weight: 700; margin-top: 5px; display: block; }
 
         /* Bio e Ferramentas */
         .bio-section { padding: 80px 0; background: var(--bg-light); }
@@ -49,54 +54,59 @@
         </div>
     </section>
 
-    <section class="bio-section">
-        <div class="container">
-            <div class="bio-grid">
-                <img src="sua-foto.jpg" alt="Dra. Agnes Benites" style="width:100%; border-radius:15px; border-bottom:8px solid var(--gold);">
-                <div>
-                    <h2>Minha Carreira</h2>
-                    <p>Advogada inscrita na <strong>OAB/SP 541659</strong>, com sólida atuação em Direito Digital. Minha trajetória é marcada pela criação de soluções que simplificam a complexidade jurídica para o mercado corporativo e tecnológico.</p>
-                    <p>Desenvolvi treinamentos e metodologias exclusivas, unindo minha experiência prática em grandes ecossistemas (como a Linx) à docência jurídica autoral.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <section class="content-section">
         <div class="container">
-            <h2 style="text-align:center;">Cursos e Modelos Autorais</h2>
-            <p style="text-align:center;">Materiais desenvolvidos do zero para sua capacitação e segurança jurídica.</p>
+            <h2 style="text-align:center;">Materiais e Treinamentos</h2>
+            <p style="text-align:center;">Acesse modelos para visualização ou adquira conteúdos exclusivos.</p>
             
             <div class="content-grid">
+                
                 <div class="content-card">
-                    <span class="tag-autor">CURSO ORIGINAL</span>
-                    <h4>Treinamento de Compliance</h4>
-                    <p>Curso completo criado do zero sobre governança e ética corporativa.</p>
-                    <a href="LINK_NOTION_CURSO" class="file-link" target="_blank"><i class="fas fa-external-link-alt"></i> Acessar no Notion</a>
+                    <span class="tag-status tag-buy">PARA ADQUIRIR</span>
+                    <h4>Curso Compliance Notion</h4>
+                    <p>Treinamento completo e autoral sobre Compliance corporativo.</p>
+                    <span class="price-label">R$ 59,90</span>
+                    <a href="https://agnesbenitescursocompliance.notion.site" class="file-link" target="_blank"><i class="fas fa-graduation-cap"></i> Acessar no Notion</a>
                 </div>
 
                 <div class="content-card">
-                    <span class="tag-autor">LINX EXPERIENCE</span>
-                    <h4>Intraempreendedorismo</h4>
-                    <p>Projeto de inovação e o "Resumão do Contrato" desenvolvido para a Linx.</p>
-                    <a href="PDF_RESUMAO_LINX" class="file-link" target="_blank"><i class="fas fa-file-pdf"></i> Resumão do Contrato</a>
+                    <span class="tag-status tag-view">SÓ VISUALIZAÇÃO</span>
+                    <h4>Documentos de Conformidade</h4>
+                    <p>Modelos fundamentais para consulta e transparência.</p>
+                    <a href="https://drive.google.com/file/d/1HpiMDXQARl1yZKCEQ9sEb-LIXy2xrNJE/view?usp=drive_link" class="file-link" target="_blank"><i class="fas fa-file-contract"></i> Termo de Adesão</a>
+                    <a href="https://drive.google.com/file/d/1ZR6NW8U1xe-z9yGnngNvemuSvX0Pxwkk/view?usp=sharing" class="file-link" target="_blank"><i class="fas fa-user-shield"></i> Política de Privacidade</a>
+                    <a href="https://drive.google.com/file/d/1YSOwwIxxxXsLtiujz5yWYJ8-x2cW9Obh/view?usp=drive_link" class="file-link" target="_blank"><i class="fas fa-gavel"></i> Termos e Condições (TCU)</a>
                 </div>
 
                 <div class="content-card">
-                    <span class="tag-autor">MODELOS TÉCNICOS</span>
-                    <h4>Contratos e TCU</h4>
-                    <p>Modelos de Contratos de Adesão e Termos de Consentimento (TCU) autorais.</p>
-                    <a href="PDF_MODELO_ADESAO" class="file-link" target="_blank"><i class="fas fa-file-pdf"></i> Contrato de Adesão</a>
-                    <a href="PDF_MODELO_TCU" class="file-link" target="_blank"><i class="fas fa-file-pdf"></i> Termo TCU Autoral</a>
+                    <span class="tag-status tag-view">SÓ VISUALIZAÇÃO</span>
+                    <h4>Resumo Linx Sistemas</h4>
+                    <p>Modelo de resumo para sistemas Linx desenvolvido via Canva.</p>
+                    <a href="https://www.canva.com/design/DAGVs1dx7W0/mK8NEys0g6HwnCApyNgK5Q/edit?utm_content=DAGVs1dx7W0&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" class="file-link" target="_blank"><i class="fas fa-project-diagram"></i> Ver Resumo no Canva</a>
                 </div>
+
+                <div class="content-card">
+                    <span class="tag-status tag-buy">PARA ADQUIRIR</span>
+                    <h4>Proposta & Caderno Digital</h4>
+                    <p>Materiais premium para advogados e estudantes.</p>
+                    <div style="margin-bottom: 15px;">
+                        <span class="price-label">Modelo Proposta: Sob Consulta</span>
+                        <a href="https://www.canva.com/design/DAFJQ_XnWPA/n83ylIws2q-UI6MlHWcuoA/edit?utm_content=DAFJQ_XnWPA&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" class="file-link" target="_blank"><i class="fas fa-file-invoice-dollar"></i> Proposta Comercial Revisada</a>
+                    </div>
+                    <div>
+                        <span class="price-label">Caderno Digital: R$ 25,00</span>
+                        <a href="https://www.canva.com/design/DAGcaU3dNzo/dGcSUajHn67yqRmevkLh5A/edit?utm_content=DAGcaU3dNzo&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" class="file-link" target="_blank"><i class="fas fa-book-open"></i> Caderno para Estudantes/Adv</a>
+                    </div>
+                </div>
+
             </div>
         </div>
     </section>
 
     <section class="container">
         <div class="tool-card">
-            <i class="fas fa-robot" style="font-size: 3rem; color: var(--gold); margin-bottom: 20px;"></i>
-            <h2>Plataforma de IA Agnes Benites</h2>
+            <i class="fas fa-magic" style="font-size: 3rem; color: var(--gold); margin-bottom: 20px;"></i>
+            <h2>Plataforma IA Agnes Benites</h2>
             <p>Analise documentos via Groq AI ou utilize meus templates de mercado.</p>
             <a href="gerador-fixed.html" class="btn-main">ACESSAR O GERADOR</a>
         </div>
