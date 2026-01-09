@@ -169,10 +169,8 @@ let selectedStyle = null;
 let selectedStyleData = null;
 let currentDocumentText = ""; 
 
-// URL da API - ajuste conforme seu deploy
-const API_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:10000/api' 
-    : 'https://gerador-documentos-juridicos.onrender.com/api';
+// URL da API - seu backend na Vercel
+const API_URL = 'https://gerador-documentos-juridicos.vercel.app/api';
 
 /*==================== INICIALIZAÇÃO ====================*/
 document.addEventListener('DOMContentLoaded', () => {
@@ -209,7 +207,7 @@ async function handleAIFileUpload(file) {
         }
     } catch (e) {
         console.error('Erro:', e);
-        alert("Erro na conexão com o servidor de IA.");
+        alert("Erro na conexão com o servidor. Verifique se o backend está online.");
     } finally {
         hideLoading();
     }
@@ -238,7 +236,6 @@ async function runAICommand(intentType) {
         if (data.success) {
             alert("Documento processado pela IA com sucesso!");
             console.log("Resultado IA:", data.result);
-            // Você pode exibir o resultado em um modal ou área de texto
         } else {
             alert('Erro: ' + (data.message || 'Erro desconhecido'));
         }
@@ -447,11 +444,11 @@ async function processPayment() {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
         
-        alert('Documento gerado com sucesso!');
+        alert('Documento gerado com sucesso! ✅');
         
     } catch (error) {
         console.error('Erro:', error);
-        alert('Erro ao gerar documento. Tente novamente.');
+        alert('Erro ao gerar documento. Verifique se o backend está online: ' + error.message);
     } finally {
         hideLoading();
     }
