@@ -37,6 +37,18 @@
         .bio-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 50px; align-items: center; }
         .tool-card { background: white; border-radius: 20px; padding: 40px; text-align: center; border-top: 8px solid var(--gold); margin: 60px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .oab-tag { border: 1px solid var(--gold); color: var(--gold); padding: 2px 10px; border-radius: 5px; font-size: 0.8rem; }
+        
+        /* Calendly Section */
+        .calendly-section { padding: 80px 0; background: var(--bg-light); }
+        .calendly-container { max-width: 900px; margin: 0 auto; background: white; border-radius: 20px; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .calendly-header { text-align: center; margin-bottom: 40px; }
+        .calendly-header h2 { color: var(--primary); margin-bottom: 15px; font-size: 2.2rem; }
+        .calendly-header p { color: #666; font-size: 1.1rem; }
+        
+        @media (max-width: 768px) {
+            .calendly-container { padding: 20px; }
+            .calendly-header h2 { font-size: 1.8rem; }
+        }
     </style>
 </head>
 <body>
@@ -109,6 +121,22 @@
             <h2>Plataforma IA Agnes Benites</h2>
             <p>Analise documentos via Groq AI ou utilize meus templates de mercado.</p>
             <a href="gerador-fixed.html" class="btn-main">ACESSAR O GERADOR</a>
+        </div>
+    </section>
+
+    <!-- Seção de Agendamento Calendly -->
+    <section class="calendly-section">
+        <div class="container">
+            <div class="calendly-header">
+                <h2>Agende uma Consulta</h2>
+                <p>Escolha o melhor horário para conversarmos sobre suas necessidades jurídicas</p>
+            </div>
+            <div class="calendly-container">
+                <!-- Calendly inline widget begin -->
+                <div class="calendly-inline-widget" data-url="https://calendly.com/agnesbenites?hide_gdpr_banner=1&primary_color=002147" style="min-width:320px;height:700px;"></div>
+                <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+                <!-- Calendly inline widget end -->
+            </div>
         </div>
     </section>
 
