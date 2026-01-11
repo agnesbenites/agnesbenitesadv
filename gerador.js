@@ -6,7 +6,7 @@ const TEMPLATES_LOCAL = [
         name: 'Contrato Moderno Azul',
         description: 'Design profissional com cabeçalho azul moderno',
         category: 'contrato',
-        price: 15.00,
+        price: 25.00,
         color: '#003d7a',
         fields: [
             { name: 'contratante', label: 'Nome do Contratante', type: 'text', required: true, placeholder: 'Ex: João da Silva' },
@@ -27,7 +27,7 @@ const TEMPLATES_LOCAL = [
         name: 'Contrato Dourado Luxo',
         description: 'Contrato elegante com detalhes dourados',
         category: 'contrato',
-        price: 15.00,
+        price: 25.00,
         color: '#d4af37',
         fields: [
             { name: 'contratante', label: 'Nome do Contratante', type: 'text', required: true },
@@ -48,7 +48,7 @@ const TEMPLATES_LOCAL = [
         name: 'Contrato Simples',
         description: 'Design clean e profissional',
         category: 'contrato',
-        price: 15.00,
+        price: 25.00,
         color: '#2c3e50',
         fields: [
             { name: 'contratante', label: 'Nome do Contratante', type: 'text', required: true },
@@ -69,7 +69,7 @@ const TEMPLATES_LOCAL = [
         name: 'Contrato Laranja e Bege',
         description: 'Tons quentes e acolhedores',
         category: 'contrato',
-        price: 15.00,
+        price: 25.00,
         color: '#f4a261',
         fields: [
             { name: 'contratante', label: 'Nome do Contratante', type: 'text', required: true },
@@ -91,7 +91,7 @@ const TEMPLATES_LOCAL = [
         name: 'Proposta Verde',
         description: 'Design verde vibrante e moderno',
         category: 'proposta',
-        price: 15.00,
+        price: 25.00,
         color: '#27ae60',
         fields: [
             { name: 'proponente', label: 'Nome do Proponente', type: 'text', required: true },
@@ -110,7 +110,7 @@ const TEMPLATES_LOCAL = [
         name: 'Proposta Azul Moderna',
         description: 'Visual corporativo clean',
         category: 'proposta',
-        price: 15.00,
+        price: 25.00,
         color: '#1e3a8a',
         fields: [
             { name: 'proponente', label: 'Nome do Proponente', type: 'text', required: true },
@@ -129,7 +129,7 @@ const TEMPLATES_LOCAL = [
         name: 'Proposta Verde Simples',
         description: 'Verde clean e objetivo',
         category: 'proposta',
-        price: 15.00,
+        price: 25.00,
         color: '#2d8659',
         fields: [
             { name: 'proponente', label: 'Proponente', type: 'text', required: true },
@@ -148,7 +148,7 @@ const TEMPLATES_LOCAL = [
         name: 'Proposta Corporate Laranja',
         description: 'Vibrante para empresas modernas',
         category: 'proposta',
-        price: 15.00,
+        price: 25.00,
         color: '#ff8c42',
         fields: [
             { name: 'proponente', label: 'Proponente', type: 'text', required: true },
@@ -172,9 +172,49 @@ let currentDocumentText = "";
 // URL da API - seu backend na Vercel
 const API_URL = 'https://gerador-documentos-juridicos.vercel.app/api';
 
+/*==================== BUSCAR TEMPLATES DA API ====================*/
+async function loadTemplatesFromAPI() {
+    try {
+        showLoading('Carregando templates disponíveis...');
+        
+        const response = await fetch(`${API_URL}/templates`);
+        
+        if (!response.ok) {
+            throw new Error(`Erro ao carregar templates: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.templates && data.templates.length > 0) {
+            // Substituir templates locais pelos da API
+            TEMPLATES_LOCAL.length = 0;
+            TEMPLATES_LOCAL.push(...data.templates.map(t => ({
+                templateId: t.templateId,
+                name: t.name,
+                description: t.description,
+                category: t.category,
+                price: t.price,
+                color: t.color || (t.category === 'contrato' ? '#003d7a' : '#28a745'),
+                fields: t.fields
+            })));
+            
+            console.log(`✅ ${TEMPLATES_LOCAL.length} templates carregados da API`);
+            renderTemplateCards();
+        } else {
+            throw new Error('Nenhum template disponível');
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar templates:', error);
+        alert('Erro na conexão com o servidor. Verifique se o backend está online.');
+    } finally {
+        hideLoading();
+    }
+}
+
 /*==================== INICIALIZAÇÃO ====================*/
-document.addEventListener('DOMContentLoaded', () => {
-    renderTemplateCards();
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadTemplatesFromAPI(); // 🔥 BUSCAR DA API
     updateProgress(1);
     
     const fileInput = document.getElementById('fileInputAI');
@@ -410,7 +450,7 @@ function proceedToPayment() {
 }
 
 async function processPayment() {
-    showLoading("Gerando documento...");
+    showLoading("Criando pagamento...");
     
     // Coletar dados do formulário
     const formData = {};
@@ -422,36 +462,126 @@ async function processPayment() {
     });
     
     try {
-        // Chamar API para gerar PDF
-        const response = await fetch(`${API_URL}/generate/${selectedStyle}`, {
+        // Criar preferência de pagamento no Mercado Pago
+        const paymentResponse = await fetch(`${API_URL}/create-payment`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
+            body: JSON.stringify({
+                templateId: selectedStyle,
+                price: selectedStyleData.price,
+                formData: formData,
+                description: `Documento: ${selectedStyleData.name}`
+            })
         });
         
-        if (!response.ok) {
-            throw new Error('Erro ao gerar documento');
+        if (!paymentResponse.ok) {
+            throw new Error('Erro ao criar pagamento');
         }
         
-        // Fazer download do PDF
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${selectedStyle}-${Date.now()}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
+        const paymentData = await paymentResponse.json();
         
-        alert('Documento gerado com sucesso! ✅');
+        hideLoading();
+        
+        // Exibir opções de pagamento
+        showPaymentOptions(paymentData);
         
     } catch (error) {
         console.error('Erro:', error);
-        alert('Erro ao gerar documento. Verifique se o backend está online: ' + error.message);
-    } finally {
         hideLoading();
+        alert('Erro ao processar pagamento. Tente novamente.');
     }
+}
+
+function showPaymentOptions(paymentData) {
+    const paymentSection = document.getElementById('paymentSection');
+    
+    paymentSection.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px;">
+            
+            <!-- AVISO IMPORTANTE SOBRE IA -->
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px; margin-bottom: 30px; text-align: left;">
+                <h3 style="margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-robot"></i> Documento Gerado por Inteligência Artificial
+                </h3>
+                <p style="margin: 0 0 10px 0; line-height: 1.6;">
+                    ⚠️ <strong>Importante:</strong> Este documento é gerado automaticamente por IA e <strong>precisa de revisão jurídica</strong> antes do uso.
+                </p>
+                <p style="margin: 0; line-height: 1.6; opacity: 0.95;">
+                    💼 <strong>Precisa de um documento sob medida?</strong> 
+                    <a href="#formulario-contato" style="color: #FFD700; text-decoration: underline; font-weight: bold;" onclick="scrollToContactForm()">
+                        Solicite uma redação personalizada
+                    </a>
+                </p>
+            </div>
+            
+            <h3 style="color: var(--primary); margin-bottom: 30px;">
+                <i class="fas fa-shopping-cart"></i> Escolha a forma de pagamento
+            </h3>
+            
+            <div style="display: grid; gap: 20px; max-width: 600px; margin: 0 auto;">
+                
+                <!-- PIX -->
+                <div class="payment-option" onclick="openPaymentLink('${paymentData.init_point}', 'pix')" 
+                     style="background: linear-gradient(135deg, #32BCAD 0%, #28a745 100%); color: white; padding: 25px; border-radius: 15px; cursor: pointer; transition: 0.3s;">
+                    <i class="fas fa-qrcode" style="font-size: 2.5rem; margin-bottom: 10px;"></i>
+                    <h4 style="margin: 10px 0 5px 0;">PIX</h4>
+                    <p style="margin: 0; opacity: 0.9; font-size: 0.9rem;">✅ Aprovação instantânea</p>
+                    <div style="margin-top: 15px; font-weight: bold; font-size: 1.3rem;">
+                        R$ ${selectedStyleData.price.toFixed(2)}
+                    </div>
+                </div>
+                
+                <!-- Cartão de Crédito -->
+                <div class="payment-option" onclick="openPaymentLink('${paymentData.init_point}', 'credit_card')"
+                     style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px; cursor: pointer; transition: 0.3s;">
+                    <i class="fas fa-credit-card" style="font-size: 2.5rem; margin-bottom: 10px;"></i>
+                    <h4 style="margin: 10px 0 5px 0;">Cartão de Crédito</h4>
+                    <p style="margin: 0; opacity: 0.9; font-size: 0.9rem;">💳 Pagamento à vista</p>
+                    <div style="margin-top: 15px; font-weight: bold; font-size: 1.3rem;">
+                        R$ ${selectedStyleData.price.toFixed(2)}
+                    </div>
+                    <p style="margin: 5px 0 0 0; font-size: 0.75rem; opacity: 0.8;">Sem parcelamento</p>
+                </div>
+                
+            </div>
+            
+            <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px; font-size: 0.9rem; color: #666;">
+                <i class="fas fa-shield-alt"></i> <strong>Pagamento 100% seguro</strong> via Mercado Pago
+                <br>
+                <small>Após a confirmação do pagamento, você receberá o documento por e-mail</small>
+            </div>
+        </div>
+    `;
+    
+    // Adicionar CSS hover
+    const style = document.createElement('style');
+    style.textContent = `
+        .payment-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+function scrollToContactForm() {
+    const form = document.getElementById('formulario-contato');
+    if (form) {
+        form.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+function openPaymentLink(url, paymentMethod) {
+    // Abrir checkout do Mercado Pago em nova aba
+    window.open(url, '_blank');
+    
+    // Mostrar mensagem de instrução
+    const methodName = paymentMethod === 'pix' ? 'PIX' : 'Cartão de Crédito';
+    alert(`Você será redirecionado para o Mercado Pago para concluir o pagamento via ${methodName}.
+    
+⚠️ LEMBRE-SE: O documento é gerado por IA e precisa de revisão jurídica.
+
+Após o pagamento ser confirmado, você receberá o documento no e-mail cadastrado.`);
 }
 
 /*==================== UTILITÁRIOS ====================*/

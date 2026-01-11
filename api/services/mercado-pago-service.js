@@ -8,6 +8,7 @@ const client = new MercadoPagoConfig({
 
 /**
  * Criar preferência de pagamento
+ * APENAS PIX E CARTÃO DE CRÉDITO (SEM PARCELAMENTO)
  * @param {Object} paymentData - Dados do pagamento
  * @returns {Promise<Object>} - Preferência criada
  */
@@ -35,22 +36,32 @@ async function createPaymentPreference(paymentData) {
                 name: customerName
             },
             back_urls: {
-                success: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/gerador.html?status=success&documentId=${documentId}`,
-                failure: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/gerador.html?status=failure`,
-                pending: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/gerador.html?status=pending`
+                success: `${process.env.FRONTEND_URL || 'https://agnesbenitesadv.pages.dev'}/gerador-fixed.html?status=success&documentId=${documentId}`,
+                failure: `${process.env.FRONTEND_URL || 'https://agnesbenitesadv.pages.dev'}/gerador-fixed.html?status=failure`,
+                pending: `${process.env.FRONTEND_URL || 'https://agnesbenitesadv.pages.dev'}/gerador-fixed.html?status=pending`
             },
             auto_return: 'approved',
             external_reference: documentId,
-            notification_url: `${process.env.API_URL || 'http://localhost:3000'}/api/webhooks/mercadopago`,
+            notification_url: `${process.env.API_URL || 'https://gerador-documentos-juridicos.vercel.app'}/api/webhooks/mercadopago`,
             statement_descriptor: 'AGNES BENITES',
             payment_methods: {
-                installments: 1
+                excluded_payment_types: [
+                    { id: 'ticket' },      // ❌ Boleto (demora para compensar)
+                    { id: 'atm' },         // ❌ Débito automático
+                    { id: 'debit_card' }   // ❌ Cartão de débito
+                ],
+                excluded_payment_methods: [
+                    { id: 'bolbradesco' },
+                    { id: 'pec' }
+                ],
+                installments: 1            // ✅ APENAS À VISTA (sem parcelamento - R$ 25)
             }
         };
         
         const response = await preference.create({ body });
         
         console.log('✅ Preferência de pagamento criada:', response.id);
+        console.log('💳 Formas aceitas: PIX e Cartão de Crédito à vista');
         
         return {
             success: true,
@@ -82,6 +93,7 @@ async function getPaymentStatus(paymentId) {
             transaction_amount: paymentInfo.transaction_amount,
             date_approved: paymentInfo.date_approved,
             external_reference: paymentInfo.external_reference,
+            payment_type: paymentInfo.payment_type_id, // pix ou credit_card
             payer: {
                 email: paymentInfo.payer?.email,
                 identification: paymentInfo.payer?.identification
@@ -100,7 +112,7 @@ async function getPaymentStatus(paymentId) {
  */
 async function processWebhook(notification) {
     try {
-        console.log('📥 Webhook recebido:', notification);
+        console.log('🔥 Webhook recebido:', notification);
         
         const { type, data } = notification;
         
@@ -109,6 +121,7 @@ async function processWebhook(notification) {
             const paymentInfo = await getPaymentStatus(paymentId);
             
             console.log('💳 Status do pagamento:', paymentInfo.status);
+            console.log('💰 Tipo de pagamento:', paymentInfo.payment_type);
             
             return {
                 success: true,
