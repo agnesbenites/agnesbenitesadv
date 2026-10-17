@@ -11,8 +11,8 @@ router.post('/create-payment', async (req, res) => {
         const { templateId, price, formData, description, customerEmail, customerName } = req.body;
 
         const paymentData = {
-            documentId: `doc_${Date.now()}`,
-            templateName: description || templateId,
+            documentId: templateId ? `doc_${Date.now()}` : `consultoria_${Date.now()}`,
+            templateName: description || templateId || 'Consultoria Jurídica Estratégica (1 Hora)',
             customerEmail: customerEmail || 'cliente@email.com',
             customerName: customerName || 'Cliente',
             amount: price || 25.00
@@ -46,8 +46,7 @@ router.post('/webhooks/mercadopago', async (req, res) => {
         const result = await mercadoPagoService.processWebhook(req.body);
 
         if (result.paymentInfo && result.paymentInfo.status === 'approved') {
-            // TODO: Gerar PDF e enviar por email
-            console.log('✅ Pagamento aprovado! Documento:', result.paymentInfo.external_reference);
+            console.log('✅ Pagamento aprovado! Referência:', result.paymentInfo.external_reference);
         }
 
         res.sendStatus(200);

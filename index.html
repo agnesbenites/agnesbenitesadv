@@ -13,61 +13,97 @@
     <meta property="og:title" content="Agnes Benites | Advocacia Digital & Compliance">
     <meta property="og:description" content="Segurança jurídica, gestão contratual e inovação para negócios digitais, MEIs e empresas de tecnologia.">
 
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        :root { --primary: #002147; --gold: #c5a059; --coral: #ff7f50; --bg-light: #f8f9fa; }
-        body { font-family: 'Montserrat', sans-serif; margin: 0; color: #333; line-height: 1.6; }
-        h1, h2, h3 { font-family: 'Playfair Display', serif; }
+        :root { 
+            --primary: #001f3f; 
+            --primary-light: #003366;
+            --gold: #c5a059; 
+            --gold-light: #dfb873;
+            --coral: #ff7f50; 
+            --bg-light: #f4f6f9; 
+            --text-main: #2c3e50;
+            --text-muted: #555555;
+            --white: #ffffff;
+            --transition: all 0.3s ease;
+        }
+
+        * { box-sizing: border-box; }
+        body { font-family: 'Montserrat', sans-serif; margin: 0; color: var(--text-main); line-height: 1.7; background-color: var(--white); }
+        h1, h2, h3, h4 { font-family: 'Playfair Display', serif; }
         .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
-        header { background: var(--primary); color: white; padding: 1.5rem 0; text-align: center; }
-        .hero { background: var(--primary); color: white; padding: 80px 20px; text-align: center; }
-        .btn-main { background: var(--coral); color: white; padding: 15px 35px; border-radius: 50px; text-decoration: none; font-weight: bold; display: inline-block; transition: 0.3s; }
-        .btn-main:hover { opacity: 0.9; transform: translateY(-2px); }
-        
-        /* Seção de Conteúdos Autorais */
-        .content-section { padding: 80px 0; background: white; }
-        .content-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 40px; }
-        .content-card { border: 1px solid #eee; border-radius: 12px; padding: 25px; transition: 0.3s; background: #fff; display: flex; flex-direction: column; }
-        .content-card:hover { border-color: var(--gold); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-        .content-card h4 { color: var(--primary); margin-bottom: 10px; border-bottom: 2px solid var(--gold); display: inline-block; }
-        
-        .file-link { display: flex; align-items: center; gap: 10px; color: #555; text-decoration: none; margin-top: 10px; font-weight: 600; font-size: 0.9rem; }
-        .file-link:hover { color: var(--coral); }
-        .file-link i { color: var(--gold); }
-        
-        .tag-status { font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
-        .tag-view { background: #e3f2fd; color: #1976d2; }
-        .tag-buy { background: #fff3e0; color: #e65100; }
 
-        .price-label { color: var(--coral); font-weight: 700; margin-top: 5px; display: block; }
+        /* Header */
+        header { background: var(--primary); color: var(--white); padding: 1.2rem 0; text-align: center; border-bottom: 2px solid var(--gold); }
+        .oab-tag { border: 1px solid var(--gold); color: var(--gold); padding: 3px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.5px; }
 
-        /* Bio e Especialidade */
+        /* Hero Section */
+        .hero { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: var(--white); padding: 90px 20px; text-align: center; position: relative; overflow: hidden; }
+        .hero h1 { font-size: 2.8rem; margin-bottom: 20px; font-weight: 700; letter-spacing: -0.5px; }
+        .hero p { max-width: 800px; margin: 0 auto; font-size: 1.15rem; opacity: 0.95; font-weight: 300; }
+
+        /* Buttons */
+        .btn-main { background: var(--coral); color: var(--white); padding: 16px 40px; border-radius: 50px; text-decoration: none; font-weight: 600; display: inline-block; transition: var(--transition); box-shadow: 0 4px 15px rgba(255, 127, 80, 0.3); }
+        .btn-main:hover { background: #e06a3e; transform: translateY(-3px); box-shadow: 0 6px 20px rgba(255, 127, 80, 0.4); }
+
+        /* Bio Section */
         .bio-section { padding: 80px 0; background: var(--bg-light); text-align: center; }
-        .bio-container { max-width: 800px; margin: 0 auto; }
-        .tool-card { background: white; border-radius: 20px; padding: 40px; text-align: center; border-top: 8px solid var(--gold); margin: 60px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .oab-tag { border: 1px solid var(--gold); color: var(--gold); padding: 2px 10px; border-radius: 5px; font-size: 0.8rem; }
+        .bio-container { max-width: 850px; margin: 0 auto; background: var(--white); padding: 50px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); border-top: 5px solid var(--gold); }
+        .bio-container h2 { color: var(--primary); margin-bottom: 25px; font-size: 2rem; }
+        .bio-container p { color: var(--text-muted); font-size: 1.1rem; line-height: 1.8; }
+
+        /* Consultoria Destacada */
+        .consulting-section { padding: 90px 0; background: var(--white); text-align: center; }
+        .consulting-box { max-width: 900px; margin: 0 auto; background: var(--bg-light); border-radius: 20px; padding: 50px; border-left: 6px solid var(--gold); box-shadow: 0 10px 30px rgba(0,0,0,0.04); }
+
+        /* Cards de Materiais */
+        .content-section { padding: 90px 0; background: var(--bg-light); }
+        .content-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 30px; margin-top: 40px; }
+        .content-card { border: 1px solid #e2e8f0; border-radius: 16px; padding: 30px; transition: var(--transition); background: var(--white); display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        .content-card:hover { border-color: var(--gold); transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.08); }
+        .content-card h4 { color: var(--primary); font-size: 1.25rem; margin-bottom: 12px; margin-top: 10px; }
+        .content-card p { color: var(--text-muted); font-size: 0.95rem; }
         
-        /* Calendly Section */
-        .calendly-section { padding: 80px 0; background: var(--bg-light); }
-        .calendly-wrapper { display: grid; grid-template-columns: 1fr 350px; gap: 40px; align-items: start; }
-        .calendly-container { background: white; border-radius: 20px; padding: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; }
-        .calendly-header { text-align: center; margin-bottom: 30px; }
-        .calendly-header h2 { color: var(--primary); margin-bottom: 10px; font-size: 2rem; }
-        .calendly-header p { color: #666; font-size: 1rem; }
+        .file-link { display: flex; align-items: center; gap: 10px; color: var(--primary); text-decoration: none; margin-top: 15px; font-weight: 600; font-size: 0.9rem; transition: var(--transition); }
+        .file-link:hover { color: var(--coral); }
+        .file-link i { color: var(--gold); font-size: 1.1rem; }
         
-        .contact-info { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-left: 5px solid var(--gold); }
-        .contact-info h3 { color: var(--primary); margin-bottom: 20px; font-size: 1.3rem; }
-        .info-item { margin-bottom: 20px; display: flex; align-items: start; gap: 12px; }
-        .info-item i { color: var(--gold); font-size: 1.2rem; margin-top: 3px; }
-        .info-item-content h4 { margin: 0 0 5px 0; color: var(--primary); font-size: 0.95rem; }
-        .info-item-content p { margin: 0; color: #666; font-size: 0.9rem; line-height: 1.5; }
+        .tag-status { font-size: 0.7rem; padding: 4px 10px; border-radius: 6px; font-weight: 700; display: inline-block; letter-spacing: 0.5px; text-transform: uppercase; }
+        .tag-view { background: #e3f2fd; color: #1565c0; }
+        .tag-buy { background: #fff3e0; color: #e65100; }
+        .price-label { color: var(--coral); font-weight: 700; margin-top: 10px; display: block; font-size: 1.1rem; }
+
+        /* Plataforma de IA */
+        .tool-card { background: var(--white); border-radius: 20px; padding: 50px; text-align: center; border-top: 8px solid var(--gold); margin: 60px auto; box-shadow: 0 15px 35px rgba(0,0,0,0.06); max-width: 1100px; }
+        .tool-card h2 { color: var(--primary); font-size: 2.2rem; margin-bottom: 15px; }
+
+        /* Calendly & Contact */
+        .calendly-section { padding: 90px 0; background: var(--bg-light); }
+        .calendly-wrapper { display: grid; grid-template-columns: 1fr 380px; gap: 40px; align-items: start; }
+        .calendly-container { background: var(--white); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; padding: 10px; }
+        .calendly-header { text-align: center; margin-bottom: 40px; }
+        .calendly-header h2 { color: var(--primary); font-size: 2.2rem; margin-bottom: 10px; }
         
+        .contact-info { background: var(--white); border-radius: 20px; padding: 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border-left: 6px solid var(--gold); }
+        .contact-info h3 { color: var(--primary); margin-bottom: 25px; font-size: 1.4rem; }
+        .info-item { margin-bottom: 22px; display: flex; align-items: flex-start; gap: 15px; }
+        .info-item i { color: var(--gold); font-size: 1.3rem; margin-top: 2px; }
+        .info-item-content h4 { margin: 0 0 4px 0; color: var(--primary); font-size: 0.95rem; font-weight: 600; }
+        .info-item-content p { margin: 0; color: var(--text-muted); font-size: 0.9rem; }
+
+        /* Footer */
+        footer { background: var(--primary); color: var(--white); padding: 60px 0 30px 0; text-align: center; border-top: 3px solid var(--gold); }
+        footer h3 { color: var(--gold); font-size: 1.4rem; margin-bottom: 10px; }
+        footer a { color: var(--white); text-decoration: none; margin: 0 15px; opacity: 0.9; transition: var(--transition); }
+        footer a:hover { color: var(--gold); }
+
         @media (max-width: 768px) {
+            .hero h1 { font-size: 2.1rem; }
             .calendly-wrapper { grid-template-columns: 1fr; }
-            .calendly-container { padding: 20px; }
-            .calendly-header h2 { font-size: 1.8rem; }
             .contact-info { order: -1; }
+            .bio-container, .consulting-box, .tool-card { padding: 30px 20px; }
         }
     </style>
 </head>
@@ -82,80 +118,95 @@
     <section class="hero">
         <div class="container">
             <h1>Assessoria Jurídica, Contratos de Tech & Compliance</h1>
-            <p style="max-width: 800px; margin: 20px auto 0 auto; font-size: 1.1rem; opacity: 0.95;">
-                Atuação na interseção entre Direito e Tecnologia[cite: 11]. Especialista em gestão contratual (B2B, B2C, SaaS, Software), LGPD, Direito Digital e automação com Inteligência Artificial[cite: 11]. Soluções estratégicas para MEIs, PJs e negócios inovadores.
+            <p>
+                Atuação na interseção entre Direito e Tecnologia. Especialista em gestão contratual (B2B, B2C, SaaS, Software), LGPD, Direito Digital e automação com Inteligência Artificial. Soluções estratégicas para MEIs, PJs e negócios inovadores.
             </p>
         </div>
     </section>
 
-    <!-- Resumo Profissional Alinhado ao LinkedIn -->
+    <!-- Resumo Profissional -->
     <section class="bio-section">
         <div class="container">
             <div class="bio-container">
-                <h2 style="color: var(--primary); margin-bottom: 20px;">Visão Jurídica & Inovação</h2>
-                <p style="color: #555; font-size: 1.05rem; line-height: 1.8;">
-                    Com sólida experiência em grandes empresas de tecnologia e corporações multinacionais[cite: 11], uno a segurança jurídica tradicional à agilidade do <em>Legal Operations</em>[cite: 11]. Desenvolvo soluções consultivas focadas em mitigação de riscos, padronização de fluxos contratuais[cite: 11], conformidade com a LGPD e governança de Inteligência Artificial[cite: 11].
+                <h2 style="font-family: 'Playfair Display', serif;">Visão Jurídica & Inovação</h2>
+                <p>
+                    Com sólida experiência em grandes empresas de tecnologia e corporações multinacionais, uno a segurança jurídica tradicional à agilidade do <em>Legal Operations</em>. Desenvolvo soluções consultivas focadas em mitigação de riscos, padronização de fluxos contratuais, conformidade com a LGPD e governança de Inteligência Artificial.
                 </p>
             </div>
         </div>
     </section>
 
     <!-- Seção de Consultoria por Hora / MEI e PJ -->
-    <section style="padding: 60px 0; background: white;">
-        <div class="container" style="text-align: center;">
-            <span class="tag-status tag-buy" style="font-size: 0.8rem; padding: 5px 15px;">ATENDIMENTO CONSULTIVO</span>
-            <h2 style="color: var(--primary); font-size: 2.2rem; margin-top: 15px;">Consultoria Jurídica Estratégica por Hora</h2>
-            <p style="font-size: 1.1rem; color: #666; max-width: 850px; margin: 20px auto 40px auto; line-height: 1.8;">
-                Orientação especializada e direta ao ponto para MEIs, PJs e empreendedores. Tire dúvidas pontuais, analise riscos de negócios ou estruture questões contratuais com segurança[cite: 11]. <strong>Valores alinhados à Tabela de Honorários da OAB/SP.</strong>
-            </p>
-            <a href="#agendamento" class="btn-main" style="font-size: 1.1rem; padding: 15px 40px;">
-                <i class="fas fa-calendar-check"></i> Agendar Consultoria
-            </a>
+    <section class="consulting-section">
+        <div class="container">
+            <div class="consulting-box">
+                <span class="tag-status tag-buy" style="margin-bottom: 15px;">Atendimento Consultivo</span>
+                <h2 style="color: var(--primary); font-size: 2.2rem; margin-bottom: 20px;">Consultoria Jurídica Estratégica por Hora</h2>
+                <p style="font-size: 1.05rem; color: var(--text-muted); max-width: 750px; margin: 0 auto 30px auto;">
+                    Orientação especializada e direta ao ponto para MEIs, PJs e empreendedores. Tire dúvidas pontuais, analise riscos de negócios ou estruture questões contratuais com segurança. <strong>Valores alinhados à Tabela de Honorários da OAB/SP.</strong>
+                </p>
+                <a href="#agendamento" class="btn-main">
+                    <i class="fas fa-calendar-check"></i> Agendar Consultoria
+                </a>
+            </div>
         </div>
     </section>
 
-    <section class="content-section" style="background: var(--bg-light);">
+    <!-- Materiais e Treinamentos -->
+    <section class="content-section">
         <div class="container">
-            <h2 style="text-align:center;">Materiais e Treinamentos</h2>
-            <p style="text-align:center; color: #666;">Acesse modelos para visualização ou adquira conteúdos exclusivos autorais.</p>
+            <h2 style="text-align:center; color: var(--primary); font-size: 2.3rem; margin-bottom: 10px;">Materiais e Treinamentos</h2>
+            <p style="text-align:center; color: var(--text-muted); margin-bottom: 40px;">Acesse modelos para visualização ou adquira conteúdos exclusivos autorais.</p>
             
             <div class="content-grid">
                 
                 <div class="content-card">
-                    <span class="tag-status tag-buy">PARA ADQUIRIR</span>
-                    <h4>Curso Compliance Notion</h4>
-                    <p>Treinamento completo e autoral sobre Compliance corporativo.</p>
-                    <span class="price-label">R$ 59,90</span>
-                    <a href="https://agnesbenitescursocompliance.notion.site" class="file-link" target="_blank"><i class="fas fa-graduation-cap"></i> Acessar no Notion</a>
-                </div>
-
-                <div class="content-card">
-                    <span class="tag-status tag-view">SÓ VISUALIZAÇÃO</span>
-                    <h4>Documentos de Conformidade</h4>
-                    <p>Modelos fundamentais para consulta e transparência.</p>
-                    <a href="https://drive.google.com/file/d/1HpiMDXQARl1yZKCEQ9sEb-LIXy2xrNJE/view?usp=drive_link" class="file-link" target="_blank"><i class="fas fa-file-contract"></i> Termo de Adesão</a>
-                    <a href="https://drive.google.com/file/d/1ZR6NW8U1xe-z9yGnngNvemuSvX0Pxwkk/view?usp=sharing" class="file-link" target="_blank"><i class="fas fa-user-shield"></i> Política de Privacidade</a>
-                    <a href="https://drive.google.com/file/d/1YSOwwIxxxXsLtiujz5yWYJ8-x2cW9Obh/view?usp=drive_link" class="file-link" target="_blank"><i class="fas fa-gavel"></i> Termos e Condições (TCU)</a>
-                </div>
-
-                <div class="content-card">
-                    <span class="tag-status tag-view">SÓ VISUALIZAÇÃO</span>
-                    <h4>Resumo Linx Sistemas</h4>
-                    <p>Modelo de resumo para sistemas desenvolvido via Canva.</p>
-                    <a href="https://www.canva.com/design/DAGVs1dx7W0/mK8NEys0g6HwnCApyNgK5Q/edit?utm_content=DAGVs1dx7W0&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" class="file-link" target="_blank"><i class="fas fa-project-diagram"></i> Ver Resumo no Canva</a>
-                </div>
-
-                <div class="content-card">
-                    <span class="tag-status tag-buy">PARA ADQUIRIR</span>
-                    <h4>Proposta & Caderno Digital</h4>
-                    <p>Materiais premium para profissionais e estudantes.</p>
-                    <div style="margin-bottom: 15px;">
-                        <span class="price-label">Modelo Proposta: Sob Consulta</span>
-                        <a href="https://www.canva.com/design/DAFJQ_XnWPA/n83ylIws2q-UI6MlHWcuoA/edit?utm_content=DAFJQ_XnWPA&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" class="file-link" target="_blank"><i class="fas fa-file-invoice-dollar"></i> Proposta Comercial Revisada</a>
+                    <div>
+                        <span class="tag-status tag-buy">Para Adquirir</span>
+                        <h4>Curso Compliance Notion</h4>
+                        <p>Treinamento completo e autoral sobre Compliance corporativo.</p>
                     </div>
                     <div>
-                        <span class="price-label">Caderno Digital: R$ 25,00</span>
-                        <a href="https://www.canva.com/design/DAGcaU3dNzo/dGcSUajHn67yqRmevkLh5A/edit?utm_content=DAGcaU3dNzo&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" class="file-link" target="_blank"><i class="fas fa-book-open"></i> Caderno para Estudantes/Adv</a>
+                        <span class="price-label">R$ 59,90</span>
+                        <a href="https://agnesbenitescursocompliance.notion.site" class="file-link" target="_blank"><i class="fas fa-graduation-cap"></i> Acessar no Notion</a>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div>
+                        <span class="tag-status tag-view">Só Visualização</span>
+                        <h4>Documentos de Conformidade</h4>
+                        <p>Modelos fundamentais para consulta e transparência.</p>
+                    </div>
+                    <div>
+                        <a href="https://drive.google.com/file/d/1HpiMDXQARl1yZKCEQ9sEb-LIXy2xrNJE/view?usp=drive_link" class="file-link" target="_blank"><i class="fas fa-file-contract"></i> Termo de Adesão</a>
+                        <a href="https://drive.google.com/file/d/1ZR6NW8U1xe-z9yGnngNvemuSvX0Pxwkk/view?usp=sharing" class="file-link" target="_blank"><i class="fas fa-user-shield"></i> Política de Privacidade</a>
+                        <a href="https://drive.google.com/file/d/1YSOwwIxxxXsLtiujz5yWYJ8-x2cW9Obh/view?usp=drive_link" class="file-link" target="_blank"><i class="fas fa-gavel"></i> Termos e Condições (TCU)</a>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div>
+                        <span class="tag-status tag-view">Só Visualização</span>
+                        <h4>Resumo Linx Sistemas</h4>
+                        <p>Modelo de resumo para sistemas desenvolvido via Canva.</p>
+                    </div>
+                    <div>
+                        <a href="https://www.canva.com/design/DAGVs1dx7W0/mK8NEys0g6HwnCApyNgK5Q/edit?utm_content=DAGVs1dx7W0&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" class="file-link" target="_blank"><i class="fas fa-project-diagram"></i> Ver Resumo no Canva</a>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div>
+                        <span class="tag-status tag-buy">Para Adquirir</span>
+                        <h4>Proposta & Caderno Digital</h4>
+                        <p>Materiais premium para profissionais e estudantes.</p>
+                    </div>
+                    <div>
+                        <span class="price-label" style="font-size: 0.95rem;">Modelo Proposta: Sob Consulta</span>
+                        <a href="https://www.canva.com/design/DAFJQ_XnWPA/n83ylIws2q-UI6MlHWcuoA/edit?utm_content=DAFJQ_XnWPA&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" class="file-link" target="_blank"><i class="fas fa-file-invoice-dollar"></i> Proposta Comercial</a>
+                        <span class="price-label">R$ 25,00</span>
+                        <a href="https://www.canva.com/design/DAGcaU3dNzo/dGcSUajHn67yqRmevkLh5A/edit?utm_content=DAGcaU3dNzo&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" class="file-link" target="_blank"><i class="fas fa-book-open"></i> Caderno de Estudos</a>
                     </div>
                 </div>
 
@@ -163,20 +214,21 @@
         </div>
     </section>
 
-    <section class="container">
+    <!-- Plataforma de Documentos Inteligentes -->
+    <div class="container">
         <div class="tool-card">
             <i class="fas fa-magic" style="font-size: 3rem; color: var(--gold); margin-bottom: 20px;"></i>
             <h2>Plataforma de Documentos Inteligentes</h2>
-            <p style="font-size: 1.1rem; color: #666; max-width: 800px; margin: 20px auto;">Crie contratos profissionais ou analise documentos existentes com inteligência artificial</p>
+            <p style="font-size: 1.1rem; color: var(--text-muted); max-width: 800px; margin: 20px auto 40px auto;">Crie contratos profissionais ou analise documentos existentes com inteligência artificial</p>
             
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin: 40px 0; text-align: left;">
                 
-                <div style="background: #f8f9fa; padding: 25px; border-radius: 15px; border-left: 4px solid var(--coral);">
+                <div style="background: var(--bg-light); padding: 30px; border-radius: 15px; border-left: 4px solid var(--coral);">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
                         <i class="fas fa-file-upload" style="color: var(--coral); font-size: 1.5rem;"></i>
-                        <h3 style="margin: 0; color: var(--primary); font-size: 1.1rem;">Opção 1: Análise de Documentos</h3>
+                        <h3 style="margin: 0; color: var(--primary); font-size: 1.15rem;">Opção 1: Análise de Documentos</h3>
                     </div>
-                    <ul style="color: #666; line-height: 1.8; margin: 0; padding-left: 20px;">
+                    <ul style="color: var(--text-muted); line-height: 1.8; margin: 0; padding-left: 20px;">
                         <li>Envie seu contrato existente</li>
                         <li>IA analisa riscos e cláusulas críticas</li>
                         <li>Receba relatório com principais pontos de atenção</li>
@@ -184,12 +236,12 @@
                     </ul>
                 </div>
                 
-                <div style="background: #f8f9fa; padding: 25px; border-radius: 15px; border-left: 4px solid var(--gold);">
+                <div style="background: var(--bg-light); padding: 30px; border-radius: 15px; border-left: 4px solid var(--gold);">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
                         <i class="fas fa-file-signature" style="color: var(--gold); font-size: 1.5rem;"></i>
-                        <h3 style="margin: 0; color: var(--primary); font-size: 1.1rem;">Opção 2: Criar com Templates</h3>
+                        <h3 style="margin: 0; color: var(--primary); font-size: 1.15rem;">Opção 2: Criar com Templates</h3>
                     </div>
-                    <ul style="color: #666; line-height: 1.8; margin: 0; padding-left: 20px;">
+                    <ul style="color: var(--text-muted); line-height: 1.8; margin: 0; padding-left: 20px;">
                         <li>Escolha entre modelos profissionais</li>
                         <li>Preencha as cláusulas personalizadas</li>
                         <li>Visualize prévia com marca d'água</li>
@@ -199,55 +251,56 @@
                 
             </div>
             
-            <div style="background: linear-gradient(135deg, var(--primary) 0%, #003d7a 100%); padding: 25px; border-radius: 15px; margin: 30px 0; color: white;">
-                <h4 style="margin: 0 0 10px 0; font-size: 1.1rem;"><i class="fas fa-shield-alt"></i> Segurança e Privacidade</h4>
-                <p style="margin: 0; opacity: 0.9; line-height: 1.6;">
+            <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); padding: 30px; border-radius: 15px; margin: 35px 0; color: var(--white); text-align: left;">
+                <h4 style="margin: 0 0 10px 0; font-size: 1.15rem;"><i class="fas fa-shield-alt"></i> Segurança e Privacidade</h4>
+                <p style="margin: 0; opacity: 0.9; line-height: 1.6; font-size: 0.95rem;">
                     Todos os documentos são protegidos com marca d'água até a confirmação do pagamento. 
                     Seus dados são processados com total confidencialidade e em conformidade com a LGPD.
                 </p>
             </div>
             
-            <a href="gerador-fixed.html" class="btn-main" style="font-size: 1.1rem; padding: 18px 45px;">
+            <a href="gerador-fixed.html" class="btn-main" style="padding: 16px 45px;">
                 <i class="fas fa-arrow-right"></i> ACESSAR PLATAFORMA
             </a>
             
-            <p style="margin-top: 20px; color: #999; font-size: 0.9rem;">
+            <p style="margin-top: 20px; color: #888; font-size: 0.9rem;">
                 <i class="fas fa-info-circle"></i> Preço: R$ 25,00 por documento gerado
             </p>
         </div>
-    </section>
+    </div>
 
     <!-- Seção de Documento Personalizado -->
-    <section style="padding: 60px 0; background: white;">
+    <section style="padding: 70px 0; background: var(--white);">
         <div class="container" style="text-align: center;">
-            <div style="max-width: 800px; margin: 0 auto;">
+            <div style="max-width: 850px; margin: 0 auto;">
                 
                 <!-- Aviso sobre IA -->
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 15px; margin-bottom: 40px;">
-                    <h3 style="margin: 0 0 15px 0; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: var(--white); padding: 35px; border-radius: 16px; margin-bottom: 40px; box-shadow: 0 10px 25px rgba(79, 70, 229, 0.2);">
+                    <h3 style="margin: 0 0 15px 0; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1.3rem;">
                         <i class="fas fa-robot"></i> Documentos Gerados por IA
                     </h3>
-                    <p style="margin: 0 0 10px 0; line-height: 1.6; font-size: 1.05rem;">
+                    <p style="margin: 0; line-height: 1.7; font-size: 1.05rem; opacity: 0.95;">
                         ⚠️ <strong>Importante:</strong> Os documentos gerados por Inteligência Artificial contam com diretrizes avançadas de segurança, mas <strong>exigem validação e revisão jurídica profissional</strong> antes de sua aplicação oficial.
                     </p>
                 </div>
                 
                 <!-- CTA Documento Personalizado -->
-                <div style="background: var(--bg-light); padding: 40px; border-radius: 20px; border-left: 5px solid var(--gold);">
+                <div style="background: var(--bg-light); padding: 45px; border-radius: 20px; border-left: 6px solid var(--gold); text-align: left;">
                     <h2 style="color: var(--primary); margin-bottom: 15px; font-size: 2rem;">
                         <i class="fas fa-gavel"></i> Precisa de um Documento Sob Medida?
                     </h2>
-                    <p style="font-size: 1.1rem; color: #666; margin-bottom: 30px; line-height: 1.8;">
+                    <p style="font-size: 1.05rem; color: var(--text-muted); margin-bottom: 30px; line-height: 1.8;">
                         Se você precisa de um contrato ou instrumento jurídico <strong>completo, revisado e personalizado</strong> especificamente para o seu modelo de negócio, solicite uma redação profissional.
                     </p>
                     
-                    <a href="documento-personalizado.html" class="btn-main" style="font-size: 1.1rem; padding: 18px 45px;">
-                        <i class="fas fa-file-signature"></i> SOLICITAR DOCUMENTO PERSONALIZADO
-                    </a>
-                    
-                    <p style="margin-top: 20px; color: #999; font-size: 0.9rem;">
-                        <i class="fas fa-envelope"></i> Orçamento sem compromisso
-                    </p>
+                    <div style="text-align: center;">
+                        <a href="documento-personalizado.html" class="btn-main" style="padding: 16px 40px;">
+                            <i class="fas fa-file-signature"></i> SOLICITAR DOCUMENTO PERSONALIZADO
+                        </a>
+                        <p style="margin-top: 15px; color: #888; font-size: 0.9rem;">
+                            <i class="fas fa-envelope"></i> Orçamento sem compromisso
+                        </p>
+                    </div>
                 </div>
                 
             </div>
@@ -259,13 +312,13 @@
         <div class="container">
             <div class="calendly-header">
                 <h2>Agende uma Consulta</h2>
-                <p>Escolha o melhor horário para conversarmos sobre suas necessidades contratuais e jurídicas</p>
+                <p style="color: var(--text-muted); font-size: 1.05rem;">Escolha o melhor horário para conversarmos sobre suas necessidades contratuais e jurídicas</p>
             </div>
             
             <div class="calendly-wrapper">
                 <div class="calendly-container">
                     <!-- Calendly inline widget begin -->
-                    <div class="calendly-inline-widget" data-url="https://calendly.com/agnesbenites/new-meeting?hide_gdpr_banner=1&primary_color=002147" style="min-width:330px;height:900px;"></div>
+                    <div class="calendly-inline-widget" data-url="https://calendly.com/agnesbenites/new-meeting?hide_gdpr_banner=1&primary_color=001f3f" style="min-width:330px;height:900px;"></div>
                     <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
                     <!-- Calendly inline widget end -->
                 </div>
@@ -285,7 +338,7 @@
                         <i class="fas fa-laptop-house"></i>
                         <div class="info-item-content">
                             <h4>Atendimento</h4>
-                            <p>Remoto</p>
+                            <p>Remoto para todo o Brasil</p>
                         </div>
                     </div>
                     
@@ -317,24 +370,24 @@
         </div>
     </section>
 
-    <footer style="background:var(--primary); color:white; padding:50px 0;">
-        <div class="container" style="text-align:center;">
+    <footer>
+        <div class="container">
             <div style="margin-bottom: 25px;">
-                <h3 style="color: var(--gold); margin-bottom: 15px; font-size: 1.3rem;">Agnes Benites</h3>
+                <h3>Agnes Benites</h3>
                 <p style="margin: 5px 0; opacity: 0.9;">OAB/SP 541.659</p>
-                <p style="margin: 5px 0; opacity: 0.9;">Gestão Contratual | Direito Digital | Compliance & IA</p>
+                <p style="margin: 5px 0; opacity: 0.9; font-weight: 300;">Gestão Contratual | Direito Digital | Compliance & IA</p>
             </div>
             
             <div style="margin: 25px 0;">
-                <a href="mailto:agnesbenites@gmail.com" style="color: white; text-decoration: none; margin: 0 15px; opacity: 0.9; transition: 0.3s;">
+                <a href="mailto:agnesbenites@gmail.com">
                     <i class="fas fa-envelope"></i> agnesbenites@gmail.com
                 </a>
-                <a href="https://www.linkedin.com/in/agnesbenitesadv" target="_blank" style="color: white; text-decoration: none; margin: 0 15px; opacity: 0.9; transition: 0.3s;">
+                <a href="https://www.linkedin.com/in/agnesbenitesadv" target="_blank">
                     <i class="fab fa-linkedin"></i> LinkedIn
                 </a>
             </div>
             
-            <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; margin-top: 30px; font-size: 0.9rem; opacity: 0.8;">
+            <div style="border-top: 1px solid rgba(255,255,255,0.15); padding-top: 25px; margin-top: 30px; font-size: 0.9rem; opacity: 0.7;">
                 <p style="margin: 0;">© 2026 Agnes Benites - Todos os direitos reservados.</p>
             </div>
         </div>
