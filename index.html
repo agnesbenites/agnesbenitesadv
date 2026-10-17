@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- ========================================== -->
     <!-- TAGS DE SEO AVANÇADAS E OTIMIZAÇÃO DE BUSCA -->
-    <!-- ========================================== -->
     <title>Agnes Benites | Advocacia Digital, Contratos de Tech, LGPD e Compliance em São Paulo</title>
     <meta name="description" content="Assessoria jurídica especializada para MEIs, PJs e empresas de tecnologia. Especialista em contratos de TI, SaaS, LGPD, compliance e inovação com atendimento remoto e OAB/SP 541.659.">
     <meta name="keywords" content="advogado para pj, advogado para mei, assessoria juridica para empresas de tecnologia, contratos de saas, especialista em lgpd sp, compliance corporativo, direito digital sao paulo, advogado especialista em ti, regularizacao de empresas pj, consultoria juridica contratos, oab sp">
@@ -58,7 +56,7 @@
         .hero p { max-width: 800px; margin: 0 auto; font-size: 1.15rem; opacity: 0.95; font-weight: 300; }
 
         /* Buttons */
-        .btn-main { background: var(--coral); color: var(--white); padding: 16px 40px; border-radius: 50px; text-decoration: none; font-weight: 600; display: inline-block; transition: var(--transition); box-shadow: 0 4px 15px rgba(255, 127, 80, 0.3); }
+        .btn-main { background: var(--coral); color: var(--white); padding: 16px 40px; border-radius: 50px; text-decoration: none; font-weight: 600; display: inline-block; transition: var(--transition); box-shadow: 0 4px 15px rgba(255, 127, 80, 0.3); border: none; cursor: pointer; font-size: 1rem; }
         .btn-main:hover { background: #e06a3e; transform: translateY(-3px); box-shadow: 0 6px 20px rgba(255, 127, 80, 0.4); }
 
         /* Bio Section */
@@ -149,7 +147,7 @@
         </div>
     </section>
 
-    <!-- Seção de Consultoria por Hora / MEI e PJ -->
+    <!-- Seção de Consultoria por Hora / MEI e PJ com Botão de Pagamento Direto -->
     <section class="consulting-section">
         <div class="container">
             <div class="consulting-box">
@@ -158,9 +156,11 @@
                 <p style="font-size: 1.05rem; color: var(--text-muted); max-width: 750px; margin: 0 auto 30px auto;">
                     Orientação especializada e direta ao ponto para MEIs, PJs e empreendedores. Tire dúvidas pontuais, analise riscos de negócios ou estruture questões contratuais com segurança. <strong>Valores alinhados à Tabela de Honorários da OAB/SP.</strong>
                 </p>
-                <a href="#agendamento" class="btn-main">
-                    <i class="fas fa-calendar-check"></i> Agendar Consultoria
-                </a>
+                
+                <!-- Botão que dispara a API do Mercado Pago no Render -->
+                <button onclick="contratarConsultoria()" class="btn-main">
+                    <i class="fas fa-credit-card"></i> Pagar e Agendar Consultoria
+                </button>
             </div>
         </div>
     </section>
@@ -324,8 +324,8 @@
     <section id="agendamento" class="calendly-section">
         <div class="container">
             <div class="calendly-header">
-                <h2>Agende uma Consulta</h2>
-                <p style="color: var(--text-muted); font-size: 1.05rem;">Escolha o melhor horário para conversarmos sobre suas necessidades contratuais e jurídicas</p>
+                <h2>Agende sua Consulta</h2>
+                <p style="color: var(--text-muted); font-size: 1.05rem;">Escolha o horário de sua preferência após realizar o pagamento da consultoria</p>
             </div>
             
             <div class="calendly-wrapper">
@@ -406,5 +406,47 @@
         </div>
     </footer>
 
+    <!-- Script de Integração com o Mercado Pago (Render) -->
+    <script>
+        async function contratarConsultoria() {
+            try {
+                // Indicador visual de carregamento no botão
+                const btn = event.target.closest('button');
+                const textoOriginal = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando pagamento...';
+                btn.disabled = true;
+
+                // Determina o endpoint correto baseado no ambiente
+                const isLocal = window.location.hostname === 'localhost';
+                const endpoint = isLocal 
+                    ? 'http://localhost:3000/api/create-payment' 
+                    : 'https://gerador-documentos-juridicos.onrender.com/api/create-payment';
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        description: 'Consultoria Jurídica Estratégica (1 Hora)',
+                        price: 150.00 // Ajuste aqui se desejar o valor exato da sua hora conforme a OAB/SP
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.init_point) {
+                    // Redireciona o cliente para o checkout seguro do Mercado Pago (PIX ou Cartão à vista)
+                    window.location.href = data.init_point;
+                } else {
+                    alert('Erro ao gerar preferência de pagamento. Tente novamente.');
+                    btn.innerHTML = textoOriginal;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                alert('Erro de conexão com o servidor de pagamentos.');
+                location.reload();
+            }
+        }
+    </script>
 </body>
 </html>
